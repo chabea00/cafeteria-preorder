@@ -1,0 +1,6 @@
+<% if (errors && errors.length) { %>
+<div class="errors" role="alert">
+  <p>Please fix the following:</p>
+  <ul><% errors.forEach(function (e) { %><li><%= e %></li><% }); %></ul>
+</div>
+<% } %>

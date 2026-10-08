@@ -1,0 +1,22 @@
+<%- include('../partials/head') %>
+<h1>Order <%= order.reference_no %></h1>
+<p>Status: <span class="pill pill--<%= order.status %>"><%= order.status.replace('_', ' ') %></span> · Pickup <%= String(order.pickup_time).slice(0, 5) %></p>
+<table>
+  <caption class="sr-only">Items in this order</caption>
+  <thead><tr><th scope="col">Item</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>
+  <tbody>
+  <% items.forEach(function (i) { %>
+    <tr><th scope="row"><%= i.name %></th><td><%= i.quantity %></td><td>₱<%= (Number(i.unit_price) * i.quantity).toFixed(2) %></td></tr>
+  <% }); %>
+  </tbody>
+  <tfoot><tr><th scope="row" colspan="2">Total (pay at pickup)</th><td>₱<%= Number(order.total).toFixed(2) %></td></tr></tfoot>
+</table>
+<% if (order.note) { %><p>Note: <%= order.note %></p><% } %>
+<% if (order.status === 'pending') { %>
+<form method="POST" action="/orders/<%= order.id %>/cancel">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <button class="btn btn--danger" type="submit">Cancel this order</button>
+</form>
+<% } %>
+<p><a href="/orders">Back to my orders</a></p>
+<%- include('../partials/foot') %>

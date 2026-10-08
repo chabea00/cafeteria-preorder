@@ -1,0 +1,23 @@
+<%- include('../partials/head') %>
+<h1>Menu availability</h1>
+<table>
+  <caption class="sr-only">Menu items and whether students can order them</caption>
+  <thead><tr><th scope="col">Item</th><th scope="col">Price</th><th scope="col">Availability</th></tr></thead>
+  <tbody>
+  <% menu.forEach(function (m) { %>
+    <tr>
+      <th scope="row"><%= m.name %></th>
+      <td>₱<%= Number(m.price).toFixed(2) %></td>
+      <td>
+        <form method="POST" action="/staff/menu/<%= m.id %>/toggle" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="hidden" name="available" value="<%= m.available ? 0 : 1 %>">
+          <%= m.available ? 'Available' : 'Sold out' %>
+          <button class="btn btn--small" type="submit"><%= m.available ? 'Mark sold out' : 'Mark available' %></button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+<%- include('../partials/foot') %>

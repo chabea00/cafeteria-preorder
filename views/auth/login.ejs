@@ -1,0 +1,13 @@
+<%- include('../partials/head') %>
+<h1>Log in</h1>
+<%- include('../partials/errors', { errors }) %>
+<form method="POST" action="/login" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <label for="student_no">Student number</label>
+  <input id="student_no" name="student_no" maxlength="20" autocomplete="username" required value="<%= old.studentNo || '' %>">
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" required>
+  <button class="btn" type="submit">Log in</button>
+</form>
+<p>New here? <a href="/register">Create an account</a>.</p>
+<%- include('../partials/foot') %>

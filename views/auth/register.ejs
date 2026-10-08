@@ -1,0 +1,18 @@
+<%- include('../partials/head') %>
+<h1>Create account</h1>
+<p class="notice">We collect your name, student number, and e-mail only to identify your orders and notify you of their status. Orders are kept for one academic year, then deleted. You can view or export your data any time from “Download my data”.</p>
+<%- include('../partials/errors', { errors }) %>
+<form method="POST" action="/register" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <label for="student_no">Student number</label>
+  <input id="student_no" name="student_no" maxlength="20" required value="<%= old.studentNo || '' %>">
+  <label for="full_name">Full name</label>
+  <input id="full_name" name="full_name" maxlength="120" autocomplete="name" required value="<%= old.fullName || '' %>">
+  <label for="email">E-mail</label>
+  <input id="email" name="email" type="email" maxlength="160" autocomplete="email" required value="<%= old.email || '' %>">
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required aria-describedby="pw-help">
+  <small id="pw-help">At least 8 characters.</small>
+  <button class="btn" type="submit">Create account</button>
+</form>
+<%- include('../partials/foot') %>

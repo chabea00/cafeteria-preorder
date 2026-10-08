@@ -1,0 +1,67 @@
+<%- include('partials/head') %>
+
+<section class="hero wrap">
+  <div class="hero-copy">
+    <p class="kicker">CSPC cafeteria pre-order</p>
+    <h1>Skip the line. Your lunch is ready when you are.</h1>
+    <p class="lead">Choose your meal, pick a pickup time, and walk straight to the counter. Pay when you collect it. No more watching the clock in a queue.</p>
+    <div class="cta-row">
+      <a class="btn btn--lg" href="/orders/new">Pre-order now</a>
+      <a class="btn btn--ghost btn--lg" href="#menu">See the menu</a>
+    </div>
+    <dl class="facts">
+      <div><dt>Service hours</dt><dd>8:00–5:00</dd></div>
+      <div><dt>Order ahead by</dt><dd>15 min+</dd></div>
+      <div><dt>On the menu</dt><dd><%= menu.length %> items</dd></div>
+      <div><dt>Payment</dt><dd>At pickup</dd></div>
+    </dl>
+  </div>
+  <div class="hero-visual" aria-hidden="true">
+    <div class="plate">🍱</div>
+    <div class="float float--a"><strong>Ready alert</strong><span>See “Ready for pickup” on your order</span></div>
+    <div class="float float--b"><strong>No double-ups</strong><span>Cancel anytime while pending</span></div>
+  </div>
+</section>
+
+<div class="strip" aria-hidden="true">
+  <div class="track">
+    <% const words = menu.length ? menu.map(m => m.name) : ['Meals', 'Snacks', 'Drinks']; %>
+    <% for (let k = 0; k < 2; k++) { words.forEach(function (w) { %><span><%= w %></span><% }); } %>
+  </div>
+</div>
+
+<section id="menu" class="wrap section">
+  <h2>Today’s menu</h2>
+  <% if (menu.length === 0) { %>
+    <p class="empty">The menu is not available right now. Please check back soon.</p>
+  <% } else { %>
+  <div class="menu-grid">
+    <% Object.keys(groups).forEach(function (cat) { %>
+    <div>
+      <h3><%= cat %></h3>
+      <ul class="menu-list">
+        <% groups[cat].forEach(function (m) { %>
+        <li><span><%= m.name %></span><span class="price">₱<%= Number(m.price).toFixed(2) %></span></li>
+        <% }); %>
+      </ul>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</section>
+
+<section class="wrap section">
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><strong>Pick your food</strong><span>Enter a quantity for each item you want.</span></li>
+    <li><strong>Choose a pickup time</strong><span>Any time between 8:00 and 5:00, at least 15 minutes ahead.</span></li>
+    <li><strong>Collect and pay</strong><span>Show your reference number at the counter when the status says Ready.</span></li>
+  </ol>
+</section>
+
+<section class="wrap section final">
+  <h2>Hungry already?</h2>
+  <a class="btn btn--lg btn--sun" href="/orders/new">Start your order</a>
+</section>
+
+<%- include('partials/foot') %>

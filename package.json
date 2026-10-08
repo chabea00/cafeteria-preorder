@@ -1,0 +1,24 @@
+{
+  "name": "cafeteria-preorder",
+  "version": "1.0.0",
+  "description": "Cafeteria pre-order system (CCIT 106 midterm project)",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mysql2": "^3.9.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "supertest": "^7.0.0",
+    "vitest": "^2.0.0"
+  }
+}

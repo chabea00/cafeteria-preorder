@@ -1,0 +1,23 @@
+<nav aria-label="Main">
+  <a class="brand" href="/">Tray<span>Ahead</span></a>
+  <ul>
+  <% if (user) { %>
+    <% if (user.role === 'student') { %>
+      <li><a href="/orders/new">Order</a></li>
+      <li><a href="/orders">My orders</a></li>
+    <% } else { %>
+      <li><a href="/staff">Queue</a></li>
+      <li><a href="/staff/menu">Menu</a></li>
+    <% } %>
+    <li>
+      <form method="POST" action="/logout" class="inline">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="link" type="submit">Log out (<%= user.name %>)</button>
+      </form>
+    </li>
+  <% } else { %>
+    <li><a href="/login">Log in</a></li>
+    <li><a href="/register">Create account</a></li>
+  <% } %>
+  </ul>
+</nav>
