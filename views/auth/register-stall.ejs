@@ -1,5 +1,8 @@
 <%- include('../partials/head') %>
 <h1>Register your stall</h1>
+<%- include('../partials/role-tabs', { tabs: [
+  { label: 'Student', href: '/register', active: false },
+  { label: 'Stall owner', href: '/register/stall', active: true } ] }) %>
 <p class="notice">We collect your stall details and your name and e-mail only to show your stall to students, to let you manage your menu and orders, and to sign you in. Students see your stall name, location, description and menu. Your e-mail is never shown to them.</p>
 <%- include('../partials/errors', { errors }) %>
 <form method="POST" action="/register/stall" novalidate>
@@ -19,4 +22,5 @@
   <small id="pw-help">At least 8 characters.</small>
   <button class="btn" type="submit">Register stall</button>
 </form>
+<p>Already have an account? <a href="/login?as=stall">Log in</a>.</p>
 <%- include('../partials/foot') %>
