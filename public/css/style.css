@@ -108,3 +108,17 @@ footer.container { border-top:1px solid var(--line); margin-top:2rem; }
   .plate { margin:0 auto; }
   table { display:block; overflow-x:auto; }
 }
+
+/* stalls + menu */
+.stall-grid { list-style:none; padding:0; margin:1rem 0; display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr)); gap:1rem; }
+.stall-card { background:#fff; border:1px solid var(--line); border-radius:1.2rem; padding:1.1rem 1.2rem; }
+.stall-card h2, .stall-card h3 { margin:0 0 .3rem; font-size:1.35rem; }
+.meta { color:#44594e; font-size:.9rem; margin:.2rem 0; }
+th .meta, th .reason { display:block; font-weight:400; }
+.cat-title { display:inline-block; border-bottom:4px solid var(--sun); margin-top:1.5rem; }
+tr.item--off th, tr.item--off td { background:#eceeed; color:#55605a; }
+tr.item--off .reason { font-weight:700; color:#33403a; }
+.actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+label.check { display:flex; align-items:center; gap:.5rem; }
+label.check input[type=checkbox] { width:auto; display:inline-block; }
+form small { display:block; color:#44594e; }

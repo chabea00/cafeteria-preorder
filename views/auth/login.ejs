@@ -3,11 +3,12 @@
 <%- include('../partials/errors', { errors }) %>
 <form method="POST" action="/login" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrf %>">
-  <label for="student_no">Student number</label>
-  <input id="student_no" name="student_no" maxlength="20" autocomplete="username" required value="<%= old.studentNo || '' %>">
+  <label for="login">Student number or e-mail</label>
+  <input id="login" name="login" maxlength="160" autocomplete="username" required aria-describedby="login-help" value="<%= old.login || '' %>">
+  <small id="login-help">Students use their student number. Stall owners use their e-mail.</small>
   <label for="password">Password</label>
   <input id="password" name="password" type="password" autocomplete="current-password" required>
   <button class="btn" type="submit">Log in</button>
 </form>
-<p>New here? <a href="/register">Create an account</a>.</p>
+<p>New student? <a href="/register">Create an account</a>. Own a stall? <a href="/register/stall">Register your stall</a>.</p>
 <%- include('../partials/foot') %>

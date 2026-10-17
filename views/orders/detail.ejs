@@ -1,6 +1,7 @@
 <%- include('../partials/head') %>
 <h1>Order <%= order.reference_no %></h1>
-<p>Status: <span class="pill pill--<%= order.status %>"><%= order.status.replace('_', ' ') %></span> · Pickup <%= String(order.pickup_time).slice(0, 5) %></p>
+<p>Stall: <strong><%= order.stall_name %></strong> · Pickup <%= String(order.pickup_time).slice(0, 5) %></p>
+<p>Status: <span class="pill pill--<%= order.status %>"><%= order.status.replace('_', ' ') %></span></p>
 <table>
   <caption class="sr-only">Items in this order</caption>
   <thead><tr><th scope="col">Item</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>

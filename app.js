@@ -49,8 +49,9 @@ app.use(require('./routes/home'));
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
 app.use(require('./routes/auth'));
+app.use(require('./routes/stalls'));
 app.use(require('./routes/orders'));
-app.use(require('./routes/staff'));
+app.use(require('./routes/dashboard'));
 
 // these two must be LAST, in this order
 app.use((req, res) => res.status(404).render('error', { title: 'Not found', message: 'That page does not exist.' }));

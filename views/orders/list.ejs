@@ -1,16 +1,17 @@
 <%- include('../partials/head') %>
 <h1>My orders</h1>
-<p><a class="btn" href="/orders/new">+ New pre-order</a></p>
+<p><a class="btn" href="/stalls">+ New pre-order</a></p>
 <% if (orders.length === 0) { %>
   <p class="empty">You have no orders yet. Pick your lunch before the queue forms.</p>
 <% } else { %>
 <table>
   <caption class="sr-only">Your pre-orders</caption>
-  <thead><tr><th scope="col">Reference</th><th scope="col">Pickup</th><th scope="col">Total</th><th scope="col">Status</th></tr></thead>
+  <thead><tr><th scope="col">Reference</th><th scope="col">Stall</th><th scope="col">Pickup</th><th scope="col">Total</th><th scope="col">Status</th></tr></thead>
   <tbody>
   <% orders.forEach(function (o) { %>
     <tr>
       <td><a href="/orders/<%= o.id %>"><%= o.reference_no %></a></td>
+      <td><%= o.stall_name %></td>
       <td><%= String(o.pickup_time).slice(0, 5) %></td>
       <td>₱<%= Number(o.total).toFixed(2) %></td>
       <td><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span><% if (o.status === 'ready') { %> <strong>Ready for pickup</strong><% } %></td>

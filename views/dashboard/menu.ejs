@@ -1,0 +1,39 @@
+<%- include('../partials/head') %>
+<h1><%= stall.name %>: my menu</h1>
+<p><a class="btn" href="/dashboard/menu/new">+ Add item</a> <a class="btn btn--ghost" href="/stalls/<%= stall.id %>">See what students see</a></p>
+<% if (groups.length === 0) { %>
+  <p class="empty">Your menu is empty. Add your first item so students can pre-order.</p>
+<% } %>
+<% groups.forEach(function (g) { %>
+<section aria-labelledby="cat-<%= g.slug %>">
+  <h2 id="cat-<%= g.slug %>" class="cat-title"><%= g.category %></h2>
+  <table>
+    <caption class="sr-only"><%= g.category %> on your menu</caption>
+    <thead><tr><th scope="col">Item</th><th scope="col">Price</th><th scope="col">Max per order</th><th scope="col">Pre-ordered today</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+    <% g.items.forEach(function (m) { %>
+      <tr class="<%= m.state === 'off' ? 'item--off' : '' %>">
+        <th scope="row"><%= m.name %></th>
+        <td>₱<%= m.price.toFixed(2) %></td>
+        <td><%= m.max_per_student || 'No limit set (10)' %></td>
+        <td><%= m.sold_today %><%= m.daily_limit ? ' of ' + m.daily_limit : ' (no daily limit)' %></td>
+        <td><%= m.state === 'off' ? m.reason : 'Available' %></td>
+        <td class="actions">
+          <a href="/dashboard/menu/<%= m.id %>/edit">Edit<span class="sr-only"> <%= m.name %></span></a>
+          <form method="POST" action="/dashboard/menu/<%= m.id %>/availability" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <input type="hidden" name="available" value="<%= m.available ? 0 : 1 %>">
+            <button class="btn btn--small btn--ghost" type="submit"><%= m.available ? 'Mark unavailable' : 'Mark available' %><span class="sr-only"> <%= m.name %></span></button>
+          </form>
+          <form method="POST" action="/dashboard/menu/<%= m.id %>/delete" class="inline" onsubmit="return confirm('Delete this item? Past orders keep their record.');">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn btn--small btn--danger" type="submit">Delete<span class="sr-only"> <%= m.name %></span></button>
+          </form>
+        </td>
+      </tr>
+    <% }); %>
+    </tbody>
+  </table>
+</section>
+<% }); %>
+<%- include('../partials/foot') %>

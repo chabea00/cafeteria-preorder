@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<h1><%= stall.name %>: order queue</h1>
+<form method="GET" action="/dashboard" class="filter">
+  <label for="status">Show</label>
+  <select id="status" name="status">
+    <option value="">All statuses</option>
+    <% statuses.forEach(function (s) { %><option value="<%= s %>" <%= current === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option><% }); %>
+  </select>
+  <button class="btn" type="submit">Filter</button>
+</form>
+<% if (orders.length === 0) { %>
+  <p class="empty">No orders match. Quiet kitchen.</p>
+<% } else { %>
+<table>
+  <caption class="sr-only">Orders sorted by pickup time</caption>
+  <thead><tr><th scope="col">Pickup</th><th scope="col">Ref</th><th scope="col">Student</th><th scope="col">Items</th><th scope="col">Status</th><th scope="col">Update</th></tr></thead>
+  <tbody>
+  <% orders.forEach(function (o) { %>
+    <tr>
+      <td><%= String(o.pickup_time).slice(0, 5) %></td>
+      <td><%= o.reference_no %></td>
+      <td><%= o.full_name %></td>
+      <td><%= o.items %><% if (o.note) { %><br><small>Note: <%= o.note %></small><% } %></td>
+      <td><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span></td>
+      <td>
+        <form method="POST" action="/dashboard/orders/<%= o.id %>/status" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="hidden" name="back" value="<%= current %>">
+          <label class="sr-only" for="st-<%= o.id %>">New status for <%= o.reference_no %></label>
+          <select id="st-<%= o.id %>" name="status">
+            <% statuses.forEach(function (s) { %><option value="<%= s %>" <%= o.status === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option><% }); %>
+          </select>
+          <button class="btn btn--small" type="submit">Save</button>
+        </form>
+      </td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table>
+<% } %>
+<%- include('../partials/foot') %>

@@ -1,0 +1,19 @@
+<%- include('../partials/head') %>
+<h1>Stalls</h1>
+<p>Pick a stall, choose your food, and set your pickup time.</p>
+<% if (stalls.length === 0) { %>
+  <p class="empty">No stalls have joined yet.</p>
+<% } else { %>
+<ul class="stall-grid">
+<% stalls.forEach(function (s) { %>
+  <li class="stall-card">
+    <h2><a href="/stalls/<%= s.id %>"><%= s.name %></a></h2>
+    <% if (s.location) { %><p class="meta"><%= s.location %></p><% } %>
+    <% if (s.description) { %><p><%= s.description %></p><% } %>
+    <p class="meta"><%= s.item_count %> item<%= Number(s.item_count) === 1 ? '' : 's' %> available</p>
+    <a class="btn btn--small" href="/stalls/<%= s.id %>">View menu<span class="sr-only"> of <%= s.name %></span></a>
+  </li>
+<% }); %>
+</ul>
+<% } %>
+<%- include('../partials/foot') %>

@@ -1,19 +1,19 @@
-<% const cur = (p) => ((p === '/' ? path === '/' : path.startsWith(p)) ? ' aria-current="page"' : ''); %>
+<% const cur = (p, exact) => (((exact || p === '/') ? path === p : path.startsWith(p)) ? ' aria-current="page"' : ''); %>
 <nav aria-label="Main">
   <a class="brand" href="/"><span class="mark" aria-hidden="true">🍴</span> Tray<em>Ahead</em></a>
   <ul>
-  <% if (user && user.role !== 'student') { %>
-    <li><a href="/staff"<%- cur('/staff') %>>Queue</a></li>
-    <li><a href="/staff/menu"<%- cur('/staff/menu') %>>Menu</a></li>
+  <% if (user && user.role === 'stall') { %>
+    <li><a href="/dashboard"<%- cur('/dashboard', true) %>>Orders</a></li>
+    <li><a href="/dashboard/menu"<%- cur('/dashboard/menu') %>>My menu</a></li>
   <% } else { %>
-    <li><a href="/"<%- cur('/') %>>Home</a></li>
-    <li><a href="/#menu">Menu</a></li>
+    <li><a href="/"<%- cur('/', true) %>>Home</a></li>
+    <li><a href="/stalls"<%- cur('/stalls') %>>Stalls</a></li>
     <% if (user) { %><li><a href="/orders"<%- cur('/orders') %>>My orders</a></li><% } %>
   <% } %>
   </ul>
   <div class="nav-actions">
   <% if (user) { %>
-    <% if (user.role === 'student') { %><a class="btn btn--sm" href="/orders/new">Order now</a><% } %>
+    <% if (user.role === 'student') { %><a class="btn btn--sm" href="/stalls">Order now</a><% } %>
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="<%= csrf %>">
       <button class="link" type="submit">Log out (<%= user.name %>)</button>
