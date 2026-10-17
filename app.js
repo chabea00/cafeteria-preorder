@@ -1,12 +1,21 @@
 const express = require('express');
 const session = require('express-session');
 const crypto = require('crypto');
+const multer = require('multer');
+require('./lib/images'); // makes sure public/uploads exists
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.disable('x-powered-by');
+app.use((req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); next(); });
+
+// Photos are held in memory first and only written to disk by a route after login and validation.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 30, fieldSize: 20 * 1024 }
+}).single('image');
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
@@ -35,6 +44,19 @@ app.use((req, res, next) => {
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;
   next();
+});
+
+// forms that upload a photo arrive as multipart; read them before the token check
+app.use((req, res, next) => {
+  const multipart = req.method === 'POST' && (req.headers['content-type'] || '').startsWith('multipart/form-data');
+  if (!multipart) return next();
+  upload(req, res, (err) => {
+    if (!err) return next();
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'That photo is larger than 2 MB. Please choose a smaller one.'
+      : 'The upload could not be read. Please try again.';
+    res.status(422).render('error', { title: 'Upload problem', message });
+  });
 });
 
 // every state-changing request is a POST and must carry the token

@@ -19,6 +19,7 @@ CREATE TABLE stalls (
   name        VARCHAR(80) NOT NULL UNIQUE,
   location    VARCHAR(80)  NOT NULL DEFAULT '',   -- shown to students, e.g. "Left side, near the entrance"
   description VARCHAR(200) NOT NULL DEFAULT '',
+  logo        VARCHAR(80)  NULL,                  -- uploaded logo file name
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_stalls_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -32,6 +33,7 @@ CREATE TABLE menu_items (
   available       TINYINT(1)   NOT NULL DEFAULT 1,
   max_per_student INT NULL CHECK (max_per_student BETWEEN 1 AND 10),  -- most one student may order at once
   daily_limit     INT NULL CHECK (daily_limit >= 1),                  -- most pre-orders accepted per day
+  image           VARCHAR(80)  NULL,                                  -- uploaded photo file name
   deleted         TINYINT(1)   NOT NULL DEFAULT 0,                    -- soft delete keeps order history intact
   CONSTRAINT fk_menu_stall FOREIGN KEY (stall_id) REFERENCES stalls(id) ON DELETE CASCADE,
   INDEX idx_menu_stall (stall_id, deleted, category)

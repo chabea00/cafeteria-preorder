@@ -1,8 +1,13 @@
 <%- include('../partials/head') %>
 <p><a href="/stalls">&larr; All stalls</a></p>
-<h1><%= stall.name %></h1>
-<% if (stall.location) { %><p class="meta"><%= stall.location %></p><% } %>
-<% if (stall.description) { %><p><%= stall.description %></p><% } %>
+<div class="stall-head">
+  <%- include('../partials/pic', { file: stall.logo, fallback: stall.name.charAt(0).toUpperCase(), cls: 'logo logo--lg' }) %>
+  <div>
+    <h1><%= stall.name %></h1>
+    <% if (stall.location) { %><p class="meta"><%= stall.location %></p><% } %>
+    <% if (stall.description) { %><p><%= stall.description %></p><% } %>
+  </div>
+</div>
 <%- include('../partials/errors', { errors }) %>
 <% if (!hasItems) { %>
   <p class="empty">This stall has not added any menu items yet.</p>
@@ -23,12 +28,17 @@
       <% g.items.forEach(function (m) { %>
         <tr class="<%= m.state === 'off' ? 'item--off' : '' %>">
           <th scope="row">
-            <% if (canOrder) { %><label for="qty-<%= m.id %>"><%= m.name %></label><% } else { %><%= m.name %><% } %>
-            <% if (m.state === 'off') { %>
-              <span class="reason" id="why-<%= m.id %>"><%= m.reason %></span>
-            <% } else if (m.max_per_student || m.remaining !== null) { %>
-              <span class="meta"><% if (m.max_per_student) { %>Max <%= m.max_per_student %> per order<% } %><% if (m.max_per_student && m.remaining !== null) { %> · <% } %><% if (m.remaining !== null) { %><%= m.remaining %> left for today<% } %></span>
-            <% } %>
+            <div class="item-cell">
+              <%- include('../partials/pic', { file: m.image, fallback: '🍴', cls: 'thumb' }) %>
+              <div>
+                <% if (canOrder) { %><label for="qty-<%= m.id %>"><%= m.name %></label><% } else { %><%= m.name %><% } %>
+                <% if (m.state === 'off') { %>
+                  <span class="reason" id="why-<%= m.id %>"><%= m.reason %></span>
+                <% } else if (m.max_per_student || m.remaining !== null) { %>
+                  <span class="meta"><% if (m.max_per_student) { %>Max <%= m.max_per_student %> per order<% } %><% if (m.max_per_student && m.remaining !== null) { %> · <% } %><% if (m.remaining !== null) { %><%= m.remaining %> left for today<% } %></span>
+                <% } %>
+              </div>
+            </div>
           </th>
           <td>₱<%= m.price.toFixed(2) %></td>
           <% if (canOrder) { %>

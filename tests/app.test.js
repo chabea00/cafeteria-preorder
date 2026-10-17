@@ -34,6 +34,16 @@ describe('app basics (no database needed)', () => {
     expect(stall.text).toContain('Stall e-mail');
     expect(stall.text).toContain('Stall owner');
   });
+  it('stall registration form can upload a logo', async () => {
+    const res = await request(app).get('/register/stall');
+    expect(res.text).toContain('enctype="multipart/form-data"');
+    expect(res.text).toContain('type="file"');
+  });
+  it('keeps the stall profile behind login', async () => {
+    const res = await request(app).get('/dashboard/profile');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/login');
+  });
   it('landing page loads even if the database is down', async () => {
     const res = await request(app).get('/');
     expect(res.status).toBe(200);

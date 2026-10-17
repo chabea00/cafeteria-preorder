@@ -38,7 +38,10 @@
   <ul class="stall-grid">
     <% stalls.forEach(function (s) { %>
     <li class="stall-card">
-      <h3><a href="/stalls/<%= s.id %>"><%= s.name %></a></h3>
+      <div class="stall-top">
+        <%- include('partials/pic', { file: s.logo, fallback: s.name.charAt(0).toUpperCase(), cls: 'logo' }) %>
+        <h3><a href="/stalls/<%= s.id %>"><%= s.name %></a></h3>
+      </div>
       <% if (s.location) { %><p class="meta"><%= s.location %></p><% } %>
       <% if (s.description) { %><p><%= s.description %></p><% } %>
       <p class="meta"><%= s.item_count %> item<%= Number(s.item_count) === 1 ? '' : 's' %> available</p>
