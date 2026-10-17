@@ -2,6 +2,7 @@ const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
 const Stalls = require('../models/stalls');
+const Images = require('../lib/images');
 const router = Router();
 
 const str = (v) => String(v ?? '').trim();
@@ -60,12 +61,15 @@ router.post('/register/stall', async (req, res, next) => {
     if (name.length < 2 || name.length > 80) errors.unshift('Stall name must be 2\u201380 characters.');
     if (location.length > 80) errors.push('Location must be 80 characters or fewer.');
     if (description.length > 200) errors.push('Description must be 200 characters or fewer.');
+    const up = errors.length ? {} : await Images.saveUpload(req.file);
+    if (up.error) errors.push(up.error);
     const old = { name, location, description, fullName, email };
     if (errors.length) return res.status(422).render('auth/register-stall', { title: 'Register your stall', errors, old });
     const passwordHash = await bcrypt.hash(password, 10);
     try {
-      await Stalls.register({ fullName, email, passwordHash, name, location, description });
+      await Stalls.register({ fullName, email, passwordHash, name, location, description, logo: up.filename || null });
     } catch (err) {
+      Images.remove(up.filename); // nothing was created, so do not keep the file
       if (err.code === 'ER_DUP_ENTRY') {
         return res.status(422).render('auth/register-stall', {
           title: 'Register your stall', errors: ['That stall name or e-mail is already registered.'], old });

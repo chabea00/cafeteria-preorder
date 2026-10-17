@@ -21,7 +21,7 @@ function decorate(r) {
 // Every non-deleted item of one stall, with how many were pre-ordered today.
 async function listForStall(stallId) {
   const [rows] = await db.query(
-    'SELECT m.id, m.name, m.category, m.price, m.available, m.max_per_student, m.daily_limit, ' +
+    'SELECT m.id, m.name, m.category, m.price, m.available, m.max_per_student, m.daily_limit, m.image, ' +
     "COALESCE(SUM(CASE WHEN o.id IS NOT NULL THEN oi.quantity END), 0) AS sold_today " +
     'FROM menu_items m ' +
     'LEFT JOIN order_items oi ON oi.menu_item_id = m.id ' +
@@ -54,24 +54,27 @@ async function listPublic() {
 // Ownership is checked inside the SQL: a stall can never touch another stall's item.
 async function findOwned(id, stallId) {
   const [rows] = await db.query(
-    'SELECT id, name, category, price, available, max_per_student, daily_limit ' +
+    'SELECT id, name, category, price, available, max_per_student, daily_limit, image ' +
     'FROM menu_items WHERE id = ? AND stall_id = ? AND deleted = 0', [id, stallId]);
   return rows[0];
 }
 
 async function create(stallId, d) {
   const [r] = await db.query(
-    'INSERT INTO menu_items (stall_id, name, category, price, available, max_per_student, daily_limit) ' +
-    'VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [stallId, d.name, d.category, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit]);
+    'INSERT INTO menu_items (stall_id, name, category, price, available, max_per_student, daily_limit, image) ' +
+    'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [stallId, d.name, d.category, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit, d.image || null]);
   return r.insertId;
 }
 
+// d.image: undefined = keep the current photo, null = remove it, string = new file name
 async function update(id, stallId, d) {
+  const sets = ['name = ?', 'category = ?', 'price = ?', 'available = ?', 'max_per_student = ?', 'daily_limit = ?'];
+  const params = [d.name, d.category, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit];
+  if (d.image !== undefined) { sets.push('image = ?'); params.push(d.image); }
+  params.push(id, stallId);
   const [r] = await db.query(
-    'UPDATE menu_items SET name = ?, category = ?, price = ?, available = ?, max_per_student = ?, daily_limit = ? ' +
-    'WHERE id = ? AND stall_id = ? AND deleted = 0',
-    [d.name, d.category, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit, id, stallId]);
+    'UPDATE menu_items SET ' + sets.join(', ') + ' WHERE id = ? AND stall_id = ? AND deleted = 0', params);
   return r.affectedRows === 1;
 }
 

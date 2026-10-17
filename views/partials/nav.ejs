@@ -5,6 +5,7 @@
   <% if (user && user.role === 'stall') { %>
     <li><a href="/dashboard"<%- cur('/dashboard', true) %>>Orders</a></li>
     <li><a href="/dashboard/menu"<%- cur('/dashboard/menu') %>>My menu</a></li>
+    <li><a href="/dashboard/profile"<%- cur('/dashboard/profile') %>>Stall profile</a></li>
   <% } else { %>
     <li><a href="/"<%- cur('/', true) %>>Home</a></li>
     <li><a href="/stalls"<%- cur('/stalls') %>>Stalls</a></li>

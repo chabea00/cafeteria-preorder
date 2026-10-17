@@ -1,0 +1,24 @@
+<%- include('../partials/head') %>
+<h1>Stall profile</h1>
+<%- include('../partials/errors', { errors }) %>
+<form method="POST" action="/dashboard/profile" enctype="multipart/form-data" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <label for="stall_name">Stall name</label>
+  <input id="stall_name" name="stall_name" maxlength="80" required value="<%= old.name || '' %>">
+  <label for="location">Location in the canteen (optional)</label>
+  <input id="location" name="location" maxlength="80" value="<%= old.location || '' %>">
+  <label for="description">Short description (optional)</label>
+  <textarea id="description" name="description" rows="2" maxlength="200"><%= old.description || '' %></textarea>
+
+  <% if (logo) { %>
+  <p class="preview-label">Current logo</p>
+  <%- include('../partials/pic', { file: logo, fallback: '', cls: 'logo logo--lg' }) %>
+  <label class="check"><input type="checkbox" name="remove_image" value="1"> Remove this logo</label>
+  <% } %>
+  <label for="image"><%= logo ? 'Replace logo (optional)' : 'Stall logo (optional)' %></label>
+  <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="logo-help">
+  <small id="logo-help">JPG, PNG or WebP, up to 2 MB. If the form shows an error, choose the logo again.</small>
+
+  <button class="btn" type="submit">Save profile</button>
+</form>
+<%- include('../partials/foot') %>

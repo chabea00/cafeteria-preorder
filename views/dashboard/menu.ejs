@@ -13,7 +13,12 @@
     <tbody>
     <% g.items.forEach(function (m) { %>
       <tr class="<%= m.state === 'off' ? 'item--off' : '' %>">
-        <th scope="row"><%= m.name %></th>
+        <th scope="row">
+          <div class="item-cell">
+            <%- include('../partials/pic', { file: m.image, fallback: '🍴', cls: 'thumb' }) %>
+            <span><%= m.name %></span>
+          </div>
+        </th>
         <td>₱<%= m.price.toFixed(2) %></td>
         <td><%= m.max_per_student || 'No limit set (10)' %></td>
         <td><%= m.sold_today %><%= m.daily_limit ? ' of ' + m.daily_limit : ' (no daily limit)' %></td>

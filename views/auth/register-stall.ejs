@@ -5,7 +5,7 @@
   { label: 'Stall owner', href: '/register/stall', active: true } ] }) %>
 <p class="notice">We collect your stall details and your name and e-mail only to show your stall to students, to let you manage your menu and orders, and to sign you in. Students see your stall name, location, description and menu. Your e-mail is never shown to them.</p>
 <%- include('../partials/errors', { errors }) %>
-<form method="POST" action="/register/stall" novalidate>
+<form method="POST" action="/register/stall" enctype="multipart/form-data" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <label for="stall_name">Stall name</label>
   <input id="stall_name" name="stall_name" maxlength="80" required value="<%= old.name || '' %>">
@@ -13,6 +13,9 @@
   <input id="location" name="location" maxlength="80" value="<%= old.location || '' %>">
   <label for="description">Short description (optional)</label>
   <textarea id="description" name="description" rows="2" maxlength="200"><%= old.description || '' %></textarea>
+  <label for="image">Stall logo (optional)</label>
+  <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="logo-help">
+  <small id="logo-help">JPG, PNG or WebP, up to 2 MB. You can add or change it later.</small>
   <label for="full_name">Owner or manager name</label>
   <input id="full_name" name="full_name" maxlength="120" autocomplete="name" required value="<%= old.fullName || '' %>">
   <label for="email">E-mail (you will log in with this)</label>
