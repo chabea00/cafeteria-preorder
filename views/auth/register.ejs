@@ -1,5 +1,8 @@
 <%- include('../partials/head') %>
 <h1>Create account</h1>
+<%- include('../partials/role-tabs', { tabs: [
+  { label: 'Student', href: '/register', active: true },
+  { label: 'Stall owner', href: '/register/stall', active: false } ] }) %>
 <p class="notice">We collect your name, student number, and e-mail only to identify your orders and notify you of their status. Orders are kept for one academic year, then deleted. You can view or export your data any time from “Download my data”.</p>
 <%- include('../partials/errors', { errors }) %>
 <form method="POST" action="/register" novalidate>
@@ -15,5 +18,5 @@
   <small id="pw-help">At least 8 characters.</small>
   <button class="btn" type="submit">Create account</button>
 </form>
-<p>Own a stall in the canteen? <a href="/register/stall">Register your stall</a>.</p>
+<p>Already have an account? <a href="/login">Log in</a>.</p>
 <%- include('../partials/foot') %>

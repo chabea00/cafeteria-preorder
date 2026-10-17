@@ -78,18 +78,28 @@ router.post('/register/stall', async (req, res, next) => {
 });
 
 /* ---------- login / logout ---------- */
+const asRole = (v) => (v === 'stall' ? 'stall' : 'student');
+
 router.get('/login', (req, res) =>
-  res.render('auth/login', { title: 'Log in', errors: [], old: {} }));
+  res.render('auth/login', { title: 'Log in', errors: [], old: {}, as: asRole(req.query.as) }));
 
 router.post('/login', async (req, res, next) => {
   try {
     const login = str(req.body.login);
     const password = String(req.body.password ?? '');
+    const as = asRole(req.body.as);
     const u = login ? await Users.findByLogin(login) : null;
     const ok = u && await bcrypt.compare(password, u.password_hash);
     if (!ok) { // same message either way: do not reveal which part was wrong
       return res.status(401).render('auth/login', {
-        title: 'Log in', errors: ['Student number / e-mail or password is incorrect.'], old: { login } });
+        title: 'Log in', errors: ['Login details or password are incorrect.'], old: { login }, as });
+    }
+    // the password was right, so it is safe to say which kind of account this is
+    if ((as === 'stall') !== (u.role === 'stall')) {
+      const msg = u.role === 'stall'
+        ? 'This is a stall owner account. Choose \u201CStall owner\u201D above and log in with your e-mail.'
+        : 'This is a student account. Choose \u201CStudent\u201D above and log in with your student number.';
+      return res.status(422).render('auth/login', { title: 'Log in', errors: [msg], old: { login }, as });
     }
     req.session.regenerate((err) => {
       if (err) return next(err);

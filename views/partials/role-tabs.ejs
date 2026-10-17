@@ -1,0 +1,3 @@
+<div class="role-tabs" role="group" aria-label="Account type">
+  <% tabs.forEach(function (t) { %><a href="<%= t.href %>"<%- t.active ? ' aria-current="page"' : '' %>><%= t.label %></a><% }); %>
+</div>

@@ -1,14 +1,22 @@
 <%- include('../partials/head') %>
 <h1>Log in</h1>
+<%- include('../partials/role-tabs', { tabs: [
+  { label: 'Student', href: '/login', active: as === 'student' },
+  { label: 'Stall owner', href: '/login?as=stall', active: as === 'stall' } ] }) %>
 <%- include('../partials/errors', { errors }) %>
 <form method="POST" action="/login" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrf %>">
-  <label for="login">Student number or e-mail</label>
-  <input id="login" name="login" maxlength="160" autocomplete="username" required aria-describedby="login-help" value="<%= old.login || '' %>">
-  <small id="login-help">Students use their student number. Stall owners use their e-mail.</small>
+  <input type="hidden" name="as" value="<%= as %>">
+  <% if (as === 'stall') { %>
+  <label for="login">Stall e-mail</label>
+  <input id="login" name="login" type="email" maxlength="160" autocomplete="username" required value="<%= old.login || '' %>">
+  <% } else { %>
+  <label for="login">Student number</label>
+  <input id="login" name="login" maxlength="20" autocomplete="username" required value="<%= old.login || '' %>">
+  <% } %>
   <label for="password">Password</label>
   <input id="password" name="password" type="password" autocomplete="current-password" required>
   <button class="btn" type="submit">Log in</button>
 </form>
-<p>New student? <a href="/register">Create an account</a>. Own a stall? <a href="/register/stall">Register your stall</a>.</p>
+<p>No account yet? <a href="<%= as === 'stall' ? '/register/stall' : '/register' %>">Create one</a>.</p>
 <%- include('../partials/foot') %>

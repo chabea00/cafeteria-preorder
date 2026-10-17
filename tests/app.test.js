@@ -27,6 +27,13 @@ describe('app basics (no database needed)', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('Stall name');
   });
+  it('login page switches between student and stall owner', async () => {
+    const student = await request(app).get('/login');
+    expect(student.text).toContain('Student number');
+    const stall = await request(app).get('/login?as=stall');
+    expect(stall.text).toContain('Stall e-mail');
+    expect(stall.text).toContain('Stall owner');
+  });
   it('landing page loads even if the database is down', async () => {
     const res = await request(app).get('/');
     expect(res.status).toBe(200);
