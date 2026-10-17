@@ -8,6 +8,6 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header><%- include('nav') %></header>
-<main id="main" class="container">
-<% if (flash) { %><p class="flash" role="status"><%= flash %></p><% } %>
+<header class="site"><%- include('nav') %></header>
+<main id="main" class="<%= (typeof wide !== 'undefined' && wide) ? '' : 'container' %>">
+<% if (flash) { %><p class="flash container" role="status"><%= flash %></p><% } %>

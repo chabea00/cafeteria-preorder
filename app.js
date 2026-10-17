@@ -31,6 +31,7 @@ app.use((req, res, next) => {
   if (!req.session.csrf) req.session.csrf = crypto.randomBytes(24).toString('hex');
   res.locals.csrf = req.session.csrf;
   res.locals.user = req.session.user || null;
+  res.locals.path = req.path;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;
   next();
@@ -44,7 +45,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => res.redirect('/orders/new'));
+app.use(require('./routes/home'));
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
 app.use(require('./routes/auth'));

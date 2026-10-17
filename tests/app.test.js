@@ -17,6 +17,11 @@ describe('app basics (no database needed)', () => {
     const res = await request(app).post('/login').type('form').send({ student_no: 'x', password: 'y' });
     expect(res.status).toBe(403);
   });
+  it('landing page loads even if the database is down', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Skip the line');
+  });
   it('returns 404 for unknown pages', async () => {
     const res = await request(app).get('/nope');
     expect(res.status).toBe(404);
