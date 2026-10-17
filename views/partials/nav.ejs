@@ -1,23 +1,26 @@
+<% const cur = (p, exact) => (((exact || p === '/') ? path === p : path.startsWith(p)) ? ' aria-current="page"' : ''); %>
 <nav aria-label="Main">
-  <a class="brand" href="/">Tray<span>Ahead</span></a>
+  <a class="brand" href="/"><span class="mark" aria-hidden="true">🍴</span> Tray<em>Ahead</em></a>
   <ul>
-  <% if (user) { %>
-    <% if (user.role === 'student') { %>
-      <li><a href="/orders/new">Order</a></li>
-      <li><a href="/orders">My orders</a></li>
-    <% } else { %>
-      <li><a href="/staff">Queue</a></li>
-      <li><a href="/staff/menu">Menu</a></li>
-    <% } %>
-    <li>
-      <form method="POST" action="/logout" class="inline">
-        <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <button class="link" type="submit">Log out (<%= user.name %>)</button>
-      </form>
-    </li>
+  <% if (user && user.role === 'stall') { %>
+    <li><a href="/dashboard"<%- cur('/dashboard', true) %>>Orders</a></li>
+    <li><a href="/dashboard/menu"<%- cur('/dashboard/menu') %>>My menu</a></li>
   <% } else { %>
-    <li><a href="/login">Log in</a></li>
-    <li><a href="/register">Create account</a></li>
+    <li><a href="/"<%- cur('/', true) %>>Home</a></li>
+    <li><a href="/stalls"<%- cur('/stalls') %>>Stalls</a></li>
+    <% if (user) { %><li><a href="/orders"<%- cur('/orders') %>>My orders</a></li><% } %>
   <% } %>
   </ul>
+  <div class="nav-actions">
+  <% if (user) { %>
+    <% if (user.role === 'student') { %><a class="btn btn--sm" href="/stalls">Order now</a><% } %>
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="link" type="submit">Log out (<%= user.name %>)</button>
+    </form>
+  <% } else { %>
+    <a class="link" href="/login">Log in</a>
+    <a class="btn btn--sm" href="/register">Create account</a>
+  <% } %>
+  </div>
 </nav>

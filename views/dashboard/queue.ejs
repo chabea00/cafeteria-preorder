@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
-<h1>Order queue</h1>
-<form method="GET" action="/staff" class="filter">
+<h1><%= stall.name %>: order queue</h1>
+<form method="GET" action="/dashboard" class="filter">
   <label for="status">Show</label>
   <select id="status" name="status">
     <option value="">All statuses</option>
@@ -23,7 +23,7 @@
       <td><%= o.items %><% if (o.note) { %><br><small>Note: <%= o.note %></small><% } %></td>
       <td><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span></td>
       <td>
-        <form method="POST" action="/staff/orders/<%= o.id %>/status" class="inline">
+        <form method="POST" action="/dashboard/orders/<%= o.id %>/status" class="inline">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
           <input type="hidden" name="back" value="<%= current %>">
           <label class="sr-only" for="st-<%= o.id %>">New status for <%= o.reference_no %></label>

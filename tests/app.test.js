@@ -13,9 +13,28 @@ describe('app basics (no database needed)', () => {
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/login');
   });
+  it('keeps the stall dashboard behind login', async () => {
+    const res = await request(app).get('/dashboard/menu');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/login');
+  });
   it('rejects a POST without a CSRF token', async () => {
-    const res = await request(app).post('/login').type('form').send({ student_no: 'x', password: 'y' });
+    const res = await request(app).post('/login').type('form').send({ login: 'x', password: 'y' });
     expect(res.status).toBe(403);
+  });
+  it('shows the stall registration form', async () => {
+    const res = await request(app).get('/register/stall');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Stall name');
+  });
+  it('landing page loads even if the database is down', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Skip the line');
+  });
+  it('returns 404 for a malformed stall id', async () => {
+    const res = await request(app).get('/stalls/abc');
+    expect(res.status).toBe(404);
   });
   it('returns 404 for unknown pages', async () => {
     const res = await request(app).get('/nope');

@@ -1,0 +1,58 @@
+<%- include('../partials/head') %>
+<p><a href="/stalls">&larr; All stalls</a></p>
+<h1><%= stall.name %></h1>
+<% if (stall.location) { %><p class="meta"><%= stall.location %></p><% } %>
+<% if (stall.description) { %><p><%= stall.description %></p><% } %>
+<%- include('../partials/errors', { errors }) %>
+<% if (!hasItems) { %>
+  <p class="empty">This stall has not added any menu items yet.</p>
+<% } else { %>
+<% if (canOrder) { %>
+<form method="POST" action="/stalls/<%= stall.id %>/order" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+<% } else { %>
+  <p class="notice">You are logged in as a stall owner, so ordering is turned off. This is how students see this menu.</p>
+<% } %>
+  <% groups.forEach(function (g) { %>
+  <section aria-labelledby="cat-<%= g.slug %>">
+    <h2 id="cat-<%= g.slug %>" class="cat-title"><%= g.category %></h2>
+    <table>
+      <caption class="sr-only"><%= g.category %> from <%= stall.name %></caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">Price</th><% if (canOrder) { %><th scope="col">Qty</th><% } %></tr></thead>
+      <tbody>
+      <% g.items.forEach(function (m) { %>
+        <tr class="<%= m.state === 'off' ? 'item--off' : '' %>">
+          <th scope="row">
+            <% if (canOrder) { %><label for="qty-<%= m.id %>"><%= m.name %></label><% } else { %><%= m.name %><% } %>
+            <% if (m.state === 'off') { %>
+              <span class="reason" id="why-<%= m.id %>"><%= m.reason %></span>
+            <% } else if (m.max_per_student || m.remaining !== null) { %>
+              <span class="meta"><% if (m.max_per_student) { %>Max <%= m.max_per_student %> per order<% } %><% if (m.max_per_student && m.remaining !== null) { %> · <% } %><% if (m.remaining !== null) { %><%= m.remaining %> left for today<% } %></span>
+            <% } %>
+          </th>
+          <td>₱<%= m.price.toFixed(2) %></td>
+          <% if (canOrder) { %>
+          <td>
+            <% if (m.state === 'off') { %>
+              <input id="qty-<%= m.id %>" class="qty" type="number" value="0" disabled aria-describedby="why-<%= m.id %>">
+            <% } else { %>
+              <input id="qty-<%= m.id %>" class="qty" name="qty_<%= m.id %>" type="number" min="0" max="<%= m.maxQty %>" inputmode="numeric" value="<%= (old.qty && old.qty[m.id]) || 0 %>">
+            <% } %>
+          </td>
+          <% } %>
+        </tr>
+      <% }); %>
+      </tbody>
+    </table>
+  </section>
+  <% }); %>
+<% if (canOrder) { %>
+  <label for="pickup_time">Pickup time (today, 8:00–17:00)</label>
+  <input id="pickup_time" name="pickup_time" type="time" min="08:00" max="17:00" required value="<%= old.pickup_time || '' %>">
+  <label for="note">Note for the stall (optional)</label>
+  <textarea id="note" name="note" rows="2" maxlength="200"><%= old.note || '' %></textarea>
+  <button class="btn" type="submit">Place order</button>
+</form>
+<% } %>
+<% } %>
+<%- include('../partials/foot') %>

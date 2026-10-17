@@ -1,0 +1,31 @@
+<%- include('../partials/head') %>
+<h1><%= title %></h1>
+<%- include('../partials/errors', { errors }) %>
+<form method="POST" action="<%= action %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <label for="name">Item name</label>
+  <input id="name" name="name" maxlength="80" required value="<%= old.name || '' %>">
+
+  <label for="category">Category</label>
+  <select id="category" name="category" required>
+    <option value="">— choose —</option>
+    <% categories.forEach(function (c) { %><option value="<%= c %>" <%= old.category === c ? 'selected' : '' %>><%= c %></option><% }); %>
+  </select>
+
+  <label for="price">Price (₱)</label>
+  <input id="price" name="price" type="number" min="0" max="9999.99" step="0.01" required value="<%= old.price === undefined ? '' : old.price %>">
+
+  <label for="max_per_student">Most a student can order at once (optional)</label>
+  <input id="max_per_student" name="max_per_student" type="number" min="1" max="10" aria-describedby="max-help" value="<%= old.max_per_student === undefined ? '' : old.max_per_student %>">
+  <small id="max-help">Leave blank for the default of 10.</small>
+
+  <label for="daily_limit">Daily pre-order limit (optional)</label>
+  <input id="daily_limit" name="daily_limit" type="number" min="1" max="1000" aria-describedby="lim-help" value="<%= old.daily_limit === undefined ? '' : old.daily_limit %>">
+  <small id="lim-help">Total pre-orders accepted per day. Once reached, the item is greyed out for students until tomorrow. Leave blank for no limit.</small>
+
+  <label class="check"><input type="checkbox" name="available" value="1" <%= old.available ? 'checked' : '' %>> Available for pre-order</label>
+
+  <button class="btn" type="submit">Save item</button>
+  <a href="/dashboard/menu">Cancel</a>
+</form>
+<%- include('../partials/foot') %>
