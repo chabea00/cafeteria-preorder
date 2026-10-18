@@ -44,6 +44,11 @@ describe('app basics (no database needed)', () => {
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/login');
   });
+  it('serves the menu script', async () => {
+    const res = await request(app).get('/js/stall-menu.js');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('menu-app');
+  });
   it('landing page loads even if the database is down', async () => {
     const res = await request(app).get('/');
     expect(res.status).toBe(200);

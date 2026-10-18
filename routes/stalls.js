@@ -11,7 +11,7 @@ async function showStall(req, res, stall, extra = {}, status = 200) {
   const items = await Menu.listForStall(stall.id);
   const user = req.session.user;
   res.status(status).render('stalls/show', {
-    title: stall.name, stall, hasItems: items.length > 0, groups: Menu.groupByCategory(items),
+    title: stall.name, wide: true, scripts: ['/js/stall-menu.js'], stall, hasItems: items.length > 0, groups: Menu.groupByCategory(items),
     canOrder: !user || user.role === 'student', errors: [], old: { qty: {} }, ...extra });
 }
 

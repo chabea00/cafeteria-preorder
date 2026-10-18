@@ -50,6 +50,7 @@ function parseItem(body) {
   const errors = [];
   const name = String(body.name ?? '').trim();
   const category = String(body.category ?? '');
+  const description = String(body.description ?? '').trim();
   const priceRaw = String(body.price ?? '').trim();
   const price = Number(priceRaw);
   const maxRaw = String(body.max_per_student ?? '').trim();
@@ -58,6 +59,7 @@ function parseItem(body) {
 
   if (name.length < 1 || name.length > 80) errors.push('Item name is required (up to 80 characters).');
   if (!Menu.CATEGORIES.includes(category)) errors.push('Choose a category.');
+  if (description.length > 200) errors.push('Description must be 200 characters or fewer.');
   if (priceRaw === '' || !Number.isFinite(price) || price < 0 || price > 9999.99) errors.push('Enter a price between 0 and 9999.99.');
   let max = null;
   if (maxRaw !== '') {
@@ -71,8 +73,8 @@ function parseItem(body) {
   }
   return {
     errors,
-    data: { name, category, price: Math.round(price * 100) / 100, max_per_student: max, daily_limit: lim, available },
-    old: { name, category, price: priceRaw, max_per_student: maxRaw, daily_limit: limRaw, available }
+    data: { name, category, description, price: Math.round(price * 100) / 100, max_per_student: max, daily_limit: lim, available },
+    old: { name, category, description, price: priceRaw, max_per_student: maxRaw, daily_limit: limRaw, available }
   };
 }
 
@@ -113,7 +115,7 @@ router.get('/dashboard/menu/:id/edit', async (req, res, next) => {
     if (!item) return notFound(res, 'Menu item not found.');
     res.render('dashboard/item-form', formView({
       title: 'Edit menu item', action: '/dashboard/menu/' + item.id,
-      old: { name: item.name, category: item.category, price: item.price,
+      old: { name: item.name, category: item.category, description: item.description, price: item.price,
              max_per_student: item.max_per_student ?? '', daily_limit: item.daily_limit ?? '',
              available: !!item.available },
       image: item.image }));

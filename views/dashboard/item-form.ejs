@@ -6,6 +6,9 @@
   <label for="name">Item name</label>
   <input id="name" name="name" maxlength="80" required value="<%= old.name || '' %>">
 
+  <label for="description">Short description (optional)</label>
+  <textarea id="description" name="description" rows="2" maxlength="200"><%= old.description || '' %></textarea>
+
   <label for="category">Category</label>
   <select id="category" name="category" required>
     <option value="">— choose —</option>
