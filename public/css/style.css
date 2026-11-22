@@ -24,8 +24,71 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display:none !important; }
-body { margin:0; font-family:var(--sans); color:var(--ink); background:var(--bg); line-height:1.55; }
+/* body { margin:0; font-family:var(--sans); color:var(--ink); background:var(--bg); line-height:1.55; } */
+body { 
+  margin:0; 
+  font-family:var(--sans); 
+  color:var(--ink); 
+  /* Subtle background pattern */
+  background: radial-gradient(circle at top right, #f0f6ff 0%, var(--bg) 40%); 
+  background-attachment: fixed;
+  line-height:1.55; 
+}
 body.has-cart { padding-bottom:5.5rem; }
+/* Hide the floating cart bar when the user jumps to the checkout section */
+body:has(#checkout:target) #cart-bar {
+  display: none !important;
+}
+
+/* Style the new inline total */
+.checkout-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.checkout-total {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.checkout-items {
+  background: var(--tint);
+  padding: 1rem;
+  border-radius: 0.8rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--line);
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.95rem;
+}
+
+.checkout-item:last-child {
+  border-bottom: none;
+}
+
+.checkout-item-name {
+  font-weight: 600;
+}
+
+.checkout-item-qty {
+  color: var(--muted);
+  margin-left: 0.5rem;
+}
+
+.checkout-item-price {
+  font-weight: 700;
+}
+
 h1, h2, h3 { font-family:var(--serif); line-height:1.15; }
 h1 { font-size:clamp(2rem, 5vw, 3.2rem); margin:1rem 0; }
 h2 { font-size:clamp(1.5rem, 3.5vw, 2.1rem); margin:0 0 1rem; }
@@ -42,7 +105,7 @@ header.site { background:var(--surface); border-bottom:1px solid var(--line); po
 nav { max-width:1100px; margin:0 auto; padding:.7rem 1rem; display:flex; flex-wrap:wrap; gap:.8rem 1.5rem; align-items:center; }
 nav ul { list-style:none; margin:0 auto 0 0; padding:0; display:flex; gap:1.4rem; flex-wrap:wrap; }
 nav ul a { color:var(--ink); text-decoration:none; font-weight:600; padding:.3rem 0; border-bottom:3px solid transparent; }
-nav ul a:hover, nav ul a[aria-current="page"] { border-bottom-color:var(--accent); }
+nav ul a:hover, nav ul a[aria-current="page"] { border-bottom-color:var(--accent); } 
 .nav-actions { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
 .brand { display:flex; align-items:center; gap:.5rem; font-family:var(--serif); font-weight:800; font-size:1.5rem; color:var(--ink); text-decoration:none; }
 .brand em { font-style:normal; color:var(--brand); }
@@ -110,8 +173,70 @@ nav ul a:hover, nav ul a[aria-current="page"] { border-bottom-color:var(--accent
 .stall-card { background:var(--surface); border:1px solid var(--line); border-radius:1.2rem; padding:1.1rem 1.2rem; }
 .stall-card h2, .stall-card h3 { margin:0; font-size:1.35rem; }
 .meta { color:var(--muted); font-size:.9rem; margin:.2rem 0; }
-.cat-title { display:inline-block; border-bottom:4px solid var(--accent); margin:1.2rem 0 .8rem; }
-.actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.cat-title {
+  display: inline-block;
+  border-bottom: 4px solid var(--accent);
+  margin: 0 0 1.5rem 0; /* Increased top to 3rem, bottom to 1.5rem */
+  font-size: 1.5rem; /* Make it slightly bigger */
+   font-weight: 800;
+  padding-bottom: 0.25rem;
+   letter-spacing: 0.5px;
+}
+
+/* Add space ABOVE every category section, EXCEPT the first one */
+.cat-section:not(:first-child) {
+  margin-top: 2rem; /* This creates the gap between Drinks and Desserts */
+}
+
+/* Optional: Add space BELOW every category section too, so the last one doesn't touch the bottom */
+.cat-section {
+  margin-bottom: 2rem; 
+}
+/* .cat-title { display:inline-block; border-bottom:4px solid var(--accent); margin:1.2rem 0 .8rem; } */
+/* .actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; } */
+/* Add this right below your existing .actions rule */
+/* td.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap; /* Force them onto one line if possible 
+}
+
+td.actions form {
+  display: inline-flex;
+  margin: 0;
+} */
+
+/* Keep them on one line and spaced nicely */
+/* td.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap; /* Prevents the button from breaking the line 
+}
+
+/* Force buttons inside the table to stay small and single-line 
+td.actions .btn {
+  white-space: nowrap; /* Stops "Mark unavailable" from wrapping 
+  padding: 0.4rem 0.8rem;  Makes the button slim 
+  margin-top: 0; Resets the top margin from the global .btn class 
+  font-size: 0.9rem;  Makes the text slightly smaller to fit 
+} */
+td.actions {
+  /* Do NOT use display: flex on the td itself */
+  white-space: nowrap; /* Keeps buttons on one line */
+  text-align: left;
+}
+
+/* Use a wrapper inside the td for flexbox instead (see Step 2) */
+.actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 2.5rem; /* Ensures the row has a minimum height */
+}
+
 th .meta, th .reason { display:block; font-weight:400; }
 tr.item--off th, tr.item--off td { background:var(--off-bg); color:var(--off-ink); }
 tr.item--off .reason { font-weight:700; }
@@ -156,6 +281,9 @@ tr.item--off .thumb { filter:grayscale(1); }
 
 /* bottom cart bar */
 .cart-bar { position:fixed; left:0; right:0; bottom:0; z-index:6; background:var(--bar-bg); color:var(--bar-ink); padding:.7rem 1rem; display:flex; gap:1rem; align-items:center; justify-content:flex-end; }
+.cart-bar {
+  display: none !important;
+}
 .cart-badge { display:grid; place-items:center; min-width:1.8rem; height:1.8rem; padding:0 .4rem; border-radius:999px; background:var(--accent); color:var(--on-accent); font-weight:800; }
 .cart-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .cart-total { flex:none; background:var(--accent); color:var(--on-accent); font-weight:800; padding:.7rem 1.2rem; border-radius:.7rem; text-decoration:none; }
@@ -211,4 +339,639 @@ footer.container { border-top:1px solid var(--line); margin-top:2rem; }
   .cards { grid-template-columns:repeat(auto-fill, minmax(10rem, 1fr)); gap:1.2rem 1rem; }
   .cart-text { display:none; }
   .cart-bar { justify-content:space-between; }
+}
+
+/* --- NEW LANDING PAGE VISUALS --- */
+
+/* Visual Stalls Grid */
+.stall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.stall-card-visual {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.stall-card-visual:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: var(--brand);
+}
+
+.stall-banner {
+  height: 140px;        /* Fixed height */
+  min-height: 140px;
+  position: relative;   /* Keeps the image constrained */
+  background-color: var(--tint);
+  border-bottom: 1px solid var(--line);
+  border-radius: 1rem 1rem 0 0;
+  overflow: hidden;     /* Hides anything that spills out */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stall-img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;    /* Crops the image beautifully instead of stretching it */
+  display: block;
+}
+
+.stall-letter {
+  font-family: var(--serif);
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--brand);
+  opacity: 0.6;
+}
+
+.stall-content {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.stall-content h3 {
+  margin: 0 0 0.25rem;
+  font-family: var(--sans);
+  font-size: 1.3rem;
+  color: var(--brand);
+}
+
+.stall-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0.5rem 0;
+  /* Truncate long descriptions */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* New CTA Box */
+.final-cta {
+  background: var(--tint);
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 1px solid var(--line);
+  margin-bottom: 2rem;
+}
+
+.final-cta h2 {
+  margin-top: 0;
+  font-size: 2.2rem;
+}
+
+/* --- IMAGE CAROUSEL STRIP --- */
+.image-strip-wrapper {
+  background: var(--brand); /* Deep Blue background */
+  padding: 1.19em 0; 
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1px solid var(--brand-dark);
+  border-bottom: 1px solid var(--brand-dark);
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.image-track {
+  display: inline-flex;
+  gap: 1rem;
+  /* This is the magic line that makes it move */
+  animation: scroll-images 30s linear infinite; 
+}
+
+/* Pause the animation when the mouse hovers over it */
+.image-strip-wrapper:hover .image-track {
+  animation-play-state: paused;
+}
+
+/* The White Pills */
+.image-card {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface); 
+  border: 1px solid var(--line);
+  border-radius: 999px; 
+  padding: 0.45rem 1.1rem; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+  cursor: default;
+}
+
+.image-card-text {
+  font-weight: 700; 
+  font-size: 0.95rem;
+  color: var(--brand); 
+}
+
+/* THIS IS THE MISSING PIECE */
+@keyframes scroll-images {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 0.5rem)); } 
+}
+
+/* Accessibility: Stop the animation if the user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .image-track {
+    animation: none;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* =========================================
+   CLEAN STALL MENU LAYOUT (KEEPING SIDEBAR)
+   ========================================= */
+
+/* 1. Clean up the Back Button */
+a[href="/stalls"].link, 
+.back-link {
+  text-decoration: none !important;
+  font-weight: 600;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+a[href="/stalls"].link:hover,
+.back-link:hover {
+  color: var(--brand);
+}
+
+.stall-page-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem 1rem; /* Removed the huge top padding */
+}
+
+/* Fix the global header spacing */
+main.container {
+  padding-top: 0.5rem; /* Pulls everything up closer to the navbar */
+}
+
+/* Tighten the stall header */
+.stall-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem; /* Reduced from 3rem */
+  padding-bottom: 1.5rem; /* Reduced from 2rem */
+  border-bottom: 2px solid var(--tint);
+}
+
+/* .stall-logo-main {
+  width: 6rem; /* Made the logo slightly smaller so it takes less vertical space 
+  height: 6rem;
+  /* ... keep the rest ... 
+} */
+
+.stall-logo-main {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--surface); /* Slightly thinner border for a smaller circle */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: var(--tint);
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem; /* Smaller font for the fallback letter */
+  font-family: var(--serif);
+  color: var(--brand);
+}
+
+.stall-header-info h1 {
+  margin: 0 0 0.2rem;
+  font-size: 2rem; /* Reduced from 2.5rem to make it smaller */
+  line-height: 1.1;
+}
+
+.stall-header-info .meta {
+  color: var(--brand);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem; /* Slightly smaller location text */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stall-desc-main {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem; /* Reduced from 1.05rem to make it smaller */
+  max-width: 500px; /* Prevents the description from stretching too far */
+}
+
+/* 4. The Grid Layout */
+.menu-layout.js {
+  display: grid;
+  grid-template-columns: 200px 1fr; /* Fixed width for sidebar, flexible for menu */
+  gap: 3rem;
+  align-items: start;
+  margin-top: 2rem;
+}
+
+/* 5. The Sidebar (Fixing the clutter) */
+.side {
+  position: sticky;
+  top: 6rem; /* Stays on screen when scrolling */
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.side h2 {
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+}
+
+.side-group {
+  margin-bottom: 2rem;
+}
+
+.side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Make the category buttons look like clean tabs */
+.side-btn {
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.side-btn:hover {
+  background: var(--tint);
+  color: var(--brand);
+}
+
+.side-btn[aria-pressed="true"] {
+  background: var(--tint);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* Remove the checkmark to make it look cleaner */
+.side-btn::before {
+  display: none;
+}
+
+/* 6. The Menu Content (Aligning "All" and Category Titles) */
+.menu-content {
+  min-width: 0; /* Prevents grid blowout */
+}
+
+/* The "All" title - clean and simple */
+.menu-title {
+  font-family: var(--serif);
+  font-size: 2rem;
+  margin: 0 0 1rem 0;
+  color: var(--ink);
+}
+
+/* The Category Titles (Viands, Drinks, etc.) */
+.cat-title {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  margin: 1rem 0 1rem 0; /* Tightened the top and bottom space */
+  padding-bottom: 0.3rem;
+  display: inline-block;
+  border-bottom: 4px solid var(--accent); /* Brings back the yellow underline! */
+}
+
+/* Reduce the gap between category sections */
+.cat-section {
+  margin-bottom: 2rem; /* Reduced from 3rem to tighten the page */
+}
+.cat-section:first-of-type {
+  margin-top: 0;
+}
+
+.btn--ghost {
+  background: var(--surface);
+  border: 2px solid var(--brand-dark);
+  color: var(--ink);
+  font-weight: 700;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn--ghost:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--tint);
+}
+
+/* =========================================
+   PASSWORD CHECKLIST
+   ========================================= */
+
+.pw-req-box {
+  background: var(--tint);
+  padding: 1rem 1.2rem;
+  border-radius: 0.6rem;
+  margin-top: 0.8rem;
+  border: 1px solid var(--line);
+}
+
+.pw-req-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pw-req-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 0.5rem;
+}
+
+@media (max-width: 500px) {
+  .pw-req-list { grid-template-columns: 1fr; }
+}
+
+.pw-req-list li {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+/* Default / Invalid state */
+.pw-req-list li.invalid {
+  color: var(--bad);
+}
+
+.pw-req-list li.invalid .icon::before {
+  content: "✗";
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Valid state */
+.pw-req-list li.valid {
+  color: #2e7d32; /* Green */
+}
+
+.pw-req-list li.valid .icon::before {
+  content: "✓";
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* =========================================
+   PASSWORD CHECKLIST
+   ========================================= */
+
+.pw-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pw-list li {
+  font-size: 0.95rem;
+  color: var(--muted); /* Grey by default */
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+/* Hide the checkmark space when invalid so it doesn't jump */
+.pw-list li::before {
+  content: "•";
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--line);
+}
+
+/* When valid: text turns green, checkmark appears */
+.pw-list li.valid {
+  color: #2e7d32; /* Green text */
+}
+
+.pw-list li.valid::before {
+  content: "✓";
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/* When invalid but typing: could stay grey or turn red. Let's keep it grey until valid for a clean look */
+.pw-list li.invalid {
+  color: var(--muted);
+}
+
+/* 1. Force the whole card to have NO underline and inherit the normal text color */
+.stall-card-visual {
+  text-decoration: none !important;
+  color: var(--ink);
+}
+
+/* 2. Target the stall name (h3) specifically */
+.stall-card-visual h3 {
+  text-decoration: none !important;
+  color: var(--ink); /* Dark by default */
+  transition: color 0.2s ease;
+}
+
+/* 3. Only when the user hovers over the card, the title turns blue */
+.stall-card-visual:hover h3 {
+  color: var(--brand);
+}
+
+/* =========================================
+   FIX FOR STALLS LIST (LIST.EJS)
+   ========================================= */
+/* 
+/* 1. Card Base Styling 
+.stall-card-visual {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  text-decoration: none !important;
+  color: var(--ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* 2. Force the title to be normal size and dark 
+.stall-card-visual .stall-name {
+  font-family: var(--sans);
+  font-size: 1.25rem; /* Fixed size 
+  font-weight: 700;
+  color: var(--ink) !important;
+  margin: 0;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+
+/* 3. Card Hover Effect 
+.stall-card-visual:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: var(--brand);
+}
+
+/* 4. Title turns blue on hover 
+.stall-card-visual:hover .stall-name {
+  color: var(--brand) !important;
+}
+
+/* 5. Make the button look good inside the link 
+.stall-card-visual .btn {
+  text-decoration: none !important;
+} */
+
+/* 1. Default state: No underline, Dark Navy text */
+.stall-card h2 a {
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  transition: color 0.2s ease;
+}
+
+/* 2. Hover state: Turns Brand Blue */
+.stall-card h2 a:hover {
+  color: var(--brand) !important;
+  text-decoration: none !important;
+}
+
+/* =========================================
+   SEGMENTED CONTROL (ACTIVE IS SOLID BLUE)
+   ========================================= */
+
+.segmented-control {
+  display: inline-flex;
+  background: var(--surface); /* White background */
+  padding: 0.3rem;
+  border-radius: 999px;
+  margin: 1rem 0 2rem;
+  border: 2px solid var(--line); /* Light border */
+}
+
+.segmented-control a {
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--muted); /* Grey text for inactive */
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.segmented-control a:hover {
+  color: var(--ink);
+  background: var(--tint); /* Soft blue on hover */
+}
+
+.segmented-control a.active {
+  background: var(--brand); /* Solid blue for active */
+  color: var(--on-brand); /* White text */
+  box-shadow: 0 2px 8px rgba(29, 95, 184, 0.3); /* Blue shadow */
+}
+
+/* =========================================
+   SOFT ACTION BUTTON COLORS
+   ========================================= */
+
+/* Pill sizing */
+.btn--pill {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 999px;
+  line-height: 1;
+  margin-top: 0;
+  text-decoration: none;
+  height: 32px; /* Match the status pill height */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid transparent;
+}
+
+/* 1. Mark as Ready (Bright Green) */
+.btn--action-green {
+  background: #2e7d32; 
+  border-color: #2e7d32;
+  color: white;
+}
+.btn--action-green:hover {
+  background: #1b5e20;
+  border-color: #1b5e20;
+}
+
+/* 2. Mark as Picked Up (Soft Green/Teal) */
+.btn--action-complete {
+  background: #e8f5e9; /* Very soft green background */
+  border-color: #a5d6a7;
+  color: #2e7d32;      /* Dark green text */
+}
+.btn--action-complete:hover {
+  background: #c8e6c9;
+  border-color: #81c784;
+}
+
+/* =========================================
+   UNIFIED TABLES FOR ALL ROLES
+   ========================================= */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0;
+  background: var(--surface);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+th, td {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+thead th {
+  background: var(--tint);
+  font-weight: 700;
+  color: var(--ink);
 }

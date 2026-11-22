@@ -1,0 +1,36 @@
+<%- include('../partials/head') %>
+<h1>Staff Registration</h1>
+<%- include('../partials/role-tabs', { tabs: [
+  { label: 'Student', href: '/register', active: false },
+  { label: 'Stall owner', href: '/register/stall', active: false },
+  { label: 'Staff', href: '/register/staff', active: true } ] }) %>
+
+<%- include('../partials/errors', { errors }) %>
+
+<form method="POST" action="/register/staff" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  
+  <label for="full_name">Full name</label>
+  <input id="full_name" name="full_name" maxlength="120" autocomplete="name" required value="<%= old.fullName || '' %>">
+  
+  <label for="email">E-mail</label>
+  <input id="email" name="email" type="email" maxlength="160" autocomplete="email" required value="<%= old.email || '' %>">
+  
+  <label for="password">Create password</label>
+  <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+  
+  <div id="password-requirements" style="margin-top: 0.8rem;">
+    <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 0.4rem;">Ensure your password has:</p>
+    <ul class="pw-list">
+      <li id="req-length" class="invalid">At least 8 characters</li>
+      <li id="req-number" class="invalid">At least 1 number</li>
+      <li id="req-upper" class="invalid">At least 1 uppercase letter</li>
+      <li id="req-lower" class="invalid">At least 1 lowercase letter</li>
+    </ul>
+  </div>
+
+  <button class="btn" type="submit" style="margin-top: 1.5rem;">Create Staff Account</button>
+</form>
+
+<script src="/js/password-check.js"></script>
+<%- include('../partials/foot') %>

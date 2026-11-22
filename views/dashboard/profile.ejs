@@ -19,6 +19,9 @@
   <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="logo-help">
   <small id="logo-help">JPG, PNG or WebP, up to 2 MB. If the form shows an error, choose the logo again.</small>
 
-  <button class="btn" type="submit">Save profile</button>
+  <div class="form-actions">
+    <button class="btn" type="submit">Save profile</button>
+    <a href="/dashboard" class="btn btn--ghost">Cancel</a>
+  </div>
 </form>
 <%- include('../partials/foot') %>

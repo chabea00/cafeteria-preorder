@@ -2,16 +2,15 @@
 
 <section class="hero wrap">
   <div class="hero-copy">
-    <p class="kicker">CSPC canteen pre-order</p>
-    <h1>Skip the line. Your lunch is ready when you are.</h1>
+    <p class="kicker">Canteen pre-order</p>
+    <h1>Skip the line. Your food is ready when you are.</h1>
     <p class="lead">Pick a stall, choose your food, and set a pickup time. Walk straight to the counter and pay when you collect it. No more watching the clock in a queue.</p>
     <div class="cta-row">
       <a class="btn btn--lg" href="/stalls">Pre-order now</a>
-      <a class="btn btn--ghost btn--lg" href="#stalls">See the stalls</a>
+      <a class="btn btn--ghost btn--lg" href="/stalls">See the stalls</a>
     </div>
     <dl class="facts">
-      <div><dt>Service hours</dt><dd>8:00–5:00</dd></div>
-      <div><dt>Order ahead by</dt><dd>15 min+</dd></div>
+      <div><dt>Service hours</dt><dd>6:00 – 5:00</dd></div>
       <div><dt>Stalls</dt><dd><%= stalls.length %></dd></div>
       <div><dt>Payment</dt><dd>At pickup</dd></div>
     </dl>
@@ -23,31 +22,57 @@
   </div>
 </section>
 
-<div class="strip" aria-hidden="true">
-  <div class="track">
-    <% const words = items.length ? items.slice(0, 14).map(i => i.name) : ['Viands', 'Snacks', 'Drinks']; %>
-    <% for (let k = 0; k < 2; k++) { words.forEach(function (w) { %><span><%= w %></span><% }); } %>
+<!-- IMAGE CAROUSEL -->
+<div class="image-strip-wrapper">
+  <div class="image-track">
+    <!-- We loop through the items twice to make it scroll infinitely -->
+    <% const carouselItems = items.length ? items.slice(0, 8) : []; %>
+    <% if (carouselItems.length > 0) { %>
+      <% for (let i = 0; i < 2; i++) { %>
+        <% carouselItems.forEach(function(item) { %>
+          <div class="image-card" style="padding-left: 1.2rem; border-radius: 999px;">
+            <!-- Just the text -->
+            <span class="image-card-text" style="font-size: 1rem;"><%= item.name %></span>
+          </div>
+        <% }); %>
+      <% } %>
+    <% } %>
   </div>
 </div>
+
+<!-- DELETED the scrolling blue text (.strip) -->
 
 <section id="stalls" class="wrap section">
   <h2>Stalls taking pre-orders</h2>
   <% if (stalls.length === 0) { %>
     <p class="empty">No stalls have joined yet. Check back soon.</p>
   <% } else { %>
-  <ul class="stall-grid">
+  <div class="stall-grid">
     <% stalls.forEach(function (s) { %>
-    <li class="stall-card">
-      <div class="stall-top">
-        <%- include('partials/pic', { file: s.logo, fallback: s.name.charAt(0).toUpperCase(), cls: 'logo' }) %>
-        <h3><a href="/stalls/<%= s.id %>"><%= s.name %></a></h3>
+    <!-- NEW VISUAL CARD STRUCTURE -->
+    <a href="/stalls/<%= s.id %>" class="stall-card-visual">
+      <!-- <div class="stall-banner">
+        <span class="stall-letter"><%= s.name.charAt(0).toUpperCase() %></span>
+      </div> -->
+      <div class="stall-banner">
+        <% if (s.logo) { %>
+          <img src="/uploads/<%= s.logo %>" alt="<%= s.name %>" class="stall-img-cover">
+        <% } else { %>
+          <span class="stall-letter"><%= s.name.charAt(0).toUpperCase() %></span>
+        <% } %>
       </div>
-      <% if (s.location) { %><p class="meta"><%= s.location %></p><% } %>
-      <% if (s.description) { %><p><%= s.description %></p><% } %>
-      <p class="meta"><%= s.item_count %> item<%= Number(s.item_count) === 1 ? '' : 's' %> available</p>
-    </li>
+      <div class="stall-content">
+        <h3><%= s.name %></h3>
+        <% if (s.location) { %><p class="meta"><%= s.location %></p><% } %>
+        <% if (s.description) { %><p class="stall-desc"><%= s.description %></p><% } %>
+        <p class="meta" style="margin-top: auto; padding-top: 1rem; text-align: center;">
+          <%= s.item_count %> item<%= Number(s.item_count) === 1 ? '' : 's' %> available
+        </p>
+        <span class="btn btn--sm" style="width: 100%; text-align: center;">View Menu</span>
+      </div>
+    </a>
     <% }); %>
-  </ul>
+  </div>
   <% } %>
 </section>
 
@@ -55,15 +80,18 @@
   <h2>How it works</h2>
   <ol class="steps">
     <li><strong>Pick a stall and your food</strong><span>Menus are sorted by category. Enter a quantity for each item you want.</span></li>
-    <li><strong>Choose a pickup time</strong><span>Any time between 8:00 and 5:00, at least 15 minutes ahead.</span></li>
+    <li><strong>Choose a pickup time</strong><span>Any time between 6:00 and 5:00, at least 5 minutes ahead.</span></li>
     <li><strong>Collect and pay</strong><span>Show your reference number at the stall when the status says Ready.</span></li>
   </ol>
 </section>
 
-<section class="wrap section final">
-  <h2>Hungry already?</h2>
-  <a class="btn btn--lg btn--sun" href="/stalls">Start your order</a>
-  <p>Run a stall in the canteen? <a href="/register/stall">Register your stall</a>.</p>
+<section class="wrap section">
+  <!-- NEW CTA BOX -->
+  <div class="final-cta">
+    <h2>Hungry already?</h2>
+    <a class="btn btn--lg btn--sun" href="/stalls">Start your order</a>
+    <p class="meta" style="margin-top: 1rem;">Run a stall in the canteen? <a href="/register/stall">Register your stall</a>.</p>
+  </div>
 </section>
 
 <%- include('partials/foot') %>

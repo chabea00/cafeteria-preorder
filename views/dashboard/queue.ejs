@@ -4,38 +4,104 @@
   <label for="status">Show</label>
   <select id="status" name="status">
     <option value="">All statuses</option>
-    <% statuses.forEach(function (s) { %><option value="<%= s %>" <%= current === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option><% }); %>
+    <% statuses.forEach(function (s) { %>
+      <option value="<%= s %>" <%= current === s ? 'selected' : '' %>>
+        <%= s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1) %>
+      </option>
+    <% }); %>
   </select>
   <button class="btn" type="submit">Filter</button>
 </form>
+
 <% if (orders.length === 0) { %>
   <p class="empty">No orders match. Quiet kitchen.</p>
 <% } else { %>
-<table>
+<table style="table-layout: auto; width: 100%;">
   <caption class="sr-only">Orders sorted by pickup time</caption>
-  <thead><tr><th scope="col">Pickup</th><th scope="col">Ref</th><th scope="col">Student</th><th scope="col">Items</th><th scope="col">Status</th><th scope="col">Update</th></tr></thead>
+  <thead>
+    <tr>
+      <th scope="col" style="white-space: nowrap;">Pickup</th>
+      <th scope="col" style="white-space: nowrap;">Ref</th>
+      <th scope="col" style="white-space: nowrap;">Student</th>
+      <th scope="col" style="min-width: 150px;">Items</th>
+      <th scope="col" style="white-space: nowrap;">Status</th>
+      <!-- REMOVED the fixed width from Action header -->
+      <th scope="col" style="text-align: right;">Action</th>
+    </tr>
+  </thead>
   <tbody>
   <% orders.forEach(function (o) { %>
     <tr>
-      <td><%= String(o.pickup_time).slice(0, 5) %></td>
-      <td><%= o.reference_no %></td>
-      <td><%= o.full_name %></td>
+      <td style="white-space: nowrap;">
+        <%= new Date('1970-01-01T' + o.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+      </td>
+      <td style="white-space: nowrap;"><%= o.reference_no %></td>
+      <td style="white-space: nowrap;"><%= o.full_name %></td>
       <td><%= o.items %><% if (o.note) { %><br><small>Note: <%= o.note %></small><% } %></td>
-      <td><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span></td>
-      <td>
-        <form method="POST" action="/dashboard/orders/<%= o.id %>/status" class="inline">
-          <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <input type="hidden" name="back" value="<%= current %>">
-          <label class="sr-only" for="st-<%= o.id %>">New status for <%= o.reference_no %></label>
-          <select id="st-<%= o.id %>" name="status">
-            <% statuses.forEach(function (s) { %><option value="<%= s %>" <%= o.status === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option><% }); %>
-          </select>
-          <button class="btn btn--small" type="submit">Save</button>
-        </form>
+      <td style="white-space: nowrap;"><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span></td>
+      
+            <td class="actions" style="text-align: right; white-space: nowrap;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem;"> <!-- INCREASED GAP to 1rem -->
+          
+          <% if (o.status === 'preparing') { %>
+            <form id="status-form-<%= o.id %>" method="POST" action="/dashboard/orders/<%= o.id %>/status" style="display: flex; gap: 1rem; align-items: center; margin: 0;">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <input type="hidden" name="back" value="<%= current %>">
+              <input type="hidden" name="status" value="ready">
+              <button type="submit" class="btn btn--action-green btn--pill">Mark as Ready</button>
+              <button type="button" onclick="cancelOrder('<%= o.id %>')" class="link" style="color: var(--bad); font-size: 0.85rem; font-weight: 600;">Cancel</button>
+            </form>
+          
+          <% } else if (o.status === 'ready') { %>
+            <form id="status-form-<%= o.id %>" method="POST" action="/dashboard/orders/<%= o.id %>/status" style="display: flex; gap: 1rem; align-items: center; margin: 0;">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <input type="hidden" name="back" value="<%= current %>">
+              <input type="hidden" name="status" value="picked_up">
+              <button type="submit" class="btn btn--action-complete btn--pill">Mark as Picked Up</button>
+              <button type="button" onclick="cancelOrder('<%= o.id %>')" class="link" style="color: var(--bad); font-size: 0.85rem; font-weight: 600;">Cancel</button>
+            </form>
+          
+          <% } else { %>
+            <span class="meta" style="margin-right: 0;">-</span>
+          <% } %>
+          
+        </div>
       </td>
     </tr>
   <% }); %>
   </tbody>
 </table>
+
+<script>
+  function cancelOrder(orderId) {
+    const reason = prompt("Please provide a reason for cancelling this order (the student will see this):");
+    if (reason !== null && reason.trim() !== "") {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/dashboard/orders/' + orderId + '/status';
+      
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = '_csrf';
+      csrfInput.value = document.querySelector('input[name="_csrf"]').value;
+      form.appendChild(csrfInput);
+      
+      const statusInput = document.createElement('input');
+      statusInput.type = 'hidden';
+      statusInput.name = 'status';
+      statusInput.value = 'cancelled';
+      form.appendChild(statusInput);
+      
+      const reasonInput = document.createElement('input');
+      reasonInput.type = 'hidden';
+      reasonInput.name = 'reason';
+      reasonInput.value = reason;
+      form.appendChild(reasonInput);
+      
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+</script>
 <% } %>
 <%- include('../partials/foot') %>

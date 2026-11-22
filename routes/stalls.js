@@ -5,14 +5,36 @@ const Orders = require('../models/orders');
 const { requireRole } = require('../middleware/auth');
 const router = Router();
 
-const OPEN = 8 * 60, CLOSE = 17 * 60, LEAD_MIN = 15;
-
 async function showStall(req, res, stall, extra = {}, status = 200) {
   const items = await Menu.listForStall(stall.id);
   const user = req.session.user;
+
+  // Check the current time against global hours
+  const now = new Date();
+  // Force the timezone to Asia/Manila
+  const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+  const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
+  
+  const OPEN_TIME = 6 * 60;  // 6:00 AM
+  const CLOSE_TIME = 17 * 60; // 5:00 PM
+  
+  // Using >= so 5:00 PM exactly is closed
+  const isCanteenOpen = !(currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME);
+
   res.status(status).render('stalls/show', {
-    title: stall.name, wide: true, scripts: ['/js/stall-menu.js'], stall, hasItems: items.length > 0, groups: Menu.groupByCategory(items),
-    canOrder: !user || user.role === 'student', errors: [], old: { qty: {} }, ...extra });
+    title: stall.name, 
+    wide: true, 
+    scripts: ['/js/stall-menu.js'], 
+    stall, 
+    hasItems: items.length > 0, 
+    groups: Menu.groupByCategory(items),
+    // CHANGED: Allow staff to order
+    canOrder: !user || user.role === 'student' || user.role === 'staff',
+    isCanteenOpen, 
+    errors: [], 
+    old: { qty: {} }, 
+    ...extra 
+  });
 }
 
 async function loadStall(req, res) {
@@ -36,13 +58,13 @@ router.get('/stalls/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/stalls/:id/order', requireRole('student'), async (req, res, next) => {
+// CHANGED: Allow staff to submit orders
+router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, res, next) => {
   try {
     const stall = await loadStall(req, res);
     if (!stall) return;
-    const pickupTime = String(req.body.pickup_time ?? '').trim();
+    
     const note = String(req.body.note ?? '').trim();
-    // fields are named qty_<itemId>; bracket names like qty[3] would be re-indexed into an array by the parser
     const rawQty = {};
     for (const [k, v] of Object.entries(req.body)) {
       const mm = /^qty_(\d{1,9})$/.exec(k);
@@ -50,7 +72,7 @@ router.post('/stalls/:id/order', requireRole('student'), async (req, res, next) 
     }
     const errors = [];
 
-    // 1. quantities: ignore blanks/zero, reject anything else that is not 1-10
+    // 1. quantities
     const wanted = [];
     for (const [k, v] of Object.entries(rawQty)) {
       const id = Number(k), q = Number(v);
@@ -62,30 +84,63 @@ router.post('/stalls/:id/order', requireRole('student'), async (req, res, next) 
     }
     if (!wanted.length && !errors.length) errors.push('Choose at least one item.');
 
-    // 2. pickup time: today, within opening hours, with lead time
-    const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(pickupTime);
-    if (!m) errors.push('Choose a pickup time.');
-    else {
-      const mins = Number(m[1]) * 60 + Number(m[2]);
-      const now = new Date(); const nowMins = now.getHours() * 60 + now.getMinutes();
-      if (mins < OPEN || mins > CLOSE) errors.push('Pickup must be between 8:00 and 17:00.');
-      else if (mins < nowMins + LEAD_MIN) errors.push('Pickup must be at least 15 minutes from now.');
+    // 2. PICKUP LOGIC
+    const now = new Date();
+    const pickupDeadline = new Date(now.getTime() + (60 * 60000)); 
+    const pickupTime = pickupDeadline.toTimeString().slice(0, 5); 
+
+    // NEW: GLOBAL OPERATING HOURS CHECK
+    const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+    const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
+    
+    const OPEN_TIME = 6 * 60;  // 6:00 AM
+    const CLOSE_TIME = 17 * 60; // 5:00 PM
+
+    // Using >= so 5:00 PM exactly is closed
+    if (currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME) {
+      errors.push('The canteen is currently closed. Pre-orders are only accepted from 6:00 AM to 5:00 PM.');
     }
+
+    // 3. Security Check: Ensure the items are within their specific time window
+    if (!errors.length) {
+      const menuItems = await Menu.listForStall(stall.id);
+
+      for (const w of wanted) {
+        const item = menuItems.find(i => i.id === w.id);
+        if (item && item.order_start && item.order_end) {
+          const [startH, startM] = item.order_start.split(':').map(Number);
+          const [endH, endM] = item.order_end.split(':').map(Number);
+          const startTotal = startH * 60 + startM;
+          const endTotal = endH * 60 + endM;
+
+          if (currentTimeInMinutes < startTotal || currentTimeInMinutes >= endTotal) {
+            errors.push(`${item.name} is no longer available for ordering today.`);
+            break;
+          }
+        }
+      }
+    }
+
     if (note.length > 200) errors.push('Note must be 200 characters or fewer.');
 
-    // 3. the model re-checks availability and limits inside a transaction
+    // 4. the model re-checks availability and limits inside a transaction
     if (!errors.length) {
       try {
         const { reference } = await Orders.create({
-          userId: req.session.user.id, stallId: stall.id, pickupTime, note, wanted });
-        req.session.flash = 'Order ' + reference + ' placed at ' + stall.name + '. Pay at pickup.';
+          userId: req.session.user.id, 
+          stallId: stall.id, 
+          pickupTime, 
+          note, 
+          wanted 
+        });
+        req.session.flash = 'Order ' + reference + ' placed at ' + stall.name + '. Please pick up by ' + pickupTime + '.';
         return res.redirect(303, '/orders'); // Post/Redirect/Get
       } catch (err) {
         if (!(err instanceof Orders.UserError)) throw err;
         errors.push(err.message);
       }
     }
-    await showStall(req, res, stall, { errors, old: { qty: rawQty, pickup_time: pickupTime, note } }, 422);
+    await showStall(req, res, stall, { errors, old: { qty: rawQty, note } }, 422);
   } catch (err) { next(err); }
 });
 

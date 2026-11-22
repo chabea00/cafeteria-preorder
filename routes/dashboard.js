@@ -26,26 +26,37 @@ router.get('/dashboard', async (req, res, next) => {
     if (status && !Orders.STATUSES.includes(status)) {
       return res.status(400).render('error', { title: 'Bad request', message: 'Unknown status filter.' });
     }
+    
+    // CHANGED: Filter out 'pending' from the dropdown list
+    const activeStatuses = Orders.STATUSES.filter(s => s !== 'pending');
+    
     res.render('dashboard/queue', {
-      title: 'Order queue', orders: await Orders.queue(req.stall.id, status || null),
-      statuses: Orders.STATUSES, current: status });
+      title: 'Order queue', 
+      orders: await Orders.queue(req.stall.id, status || null),
+      statuses: activeStatuses, 
+      current: status 
+    });
   } catch (err) { next(err); }
 });
 
 router.post('/dashboard/orders/:id/status', async (req, res, next) => {
   try {
     const status = String(req.body.status ?? '');
+    const reason = String(req.body.reason ?? '').trim() || null;
+    
     if (!Orders.STATUSES.includes(status)) {
       return res.status(400).render('error', { title: 'Bad request', message: 'Unknown status.' });
     }
-    if (!(await Orders.updateStatus(Number(req.params.id), req.stall.id, status))) return notFound(res, 'Order not found.');
+    
+    const ok = await Orders.updateStatus(Number(req.params.id), req.stall.id, status, reason);
+    if (!ok) return notFound(res, 'Order not found or cannot be updated.');
+
     req.session.flash = 'Status updated.';
     const back = Orders.STATUSES.includes(String(req.body.back)) ? '?status=' + req.body.back : '';
     res.redirect(303, '/dashboard' + back);
   } catch (err) { next(err); }
 });
 
-/* ---------- menu CRUD ---------- */
 function parseItem(body) {
   const errors = [];
   const name = String(body.name ?? '').trim();
@@ -57,10 +68,23 @@ function parseItem(body) {
   const limRaw = String(body.daily_limit ?? '').trim();
   const available = body.available === '1';
 
+  // NEW: Extract the pickup time window
+  const order_start = String(body.order_start ?? '').trim() || null;
+  const order_end = String(body.order_end ?? '').trim() || null;
+
+  // NEW: Validation for the time window
+  if ((order_start && !order_end) || (!order_start && order_end)) {
+    errors.push('Please provide both a start and end time for the pickup window, or leave both blank.');
+  }
+  if (order_start && order_end && order_start >= order_end) {
+    errors.push('The pickup start time must be earlier than the end time.');
+  }
+
   if (name.length < 1 || name.length > 80) errors.push('Item name is required (up to 80 characters).');
   if (!Menu.CATEGORIES.includes(category)) errors.push('Choose a category.');
   if (description.length > 200) errors.push('Description must be 200 characters or fewer.');
   if (priceRaw === '' || !Number.isFinite(price) || price < 0 || price > 9999.99) errors.push('Enter a price between 0 and 9999.99.');
+  
   let max = null;
   if (maxRaw !== '') {
     max = Number(maxRaw);
@@ -71,10 +95,11 @@ function parseItem(body) {
     lim = Number(limRaw);
     if (!Number.isInteger(lim) || lim < 1 || lim > 1000) { errors.push('Daily pre-order limit must be a whole number from 1 to 1000.'); lim = null; }
   }
+  
   return {
     errors,
-    data: { name, category, description, price: Math.round(price * 100) / 100, max_per_student: max, daily_limit: lim, available },
-    old: { name, category, description, price: priceRaw, max_per_student: maxRaw, daily_limit: limRaw, available }
+    data: { name, category, description, price: Math.round(price * 100) / 100, max_per_student: max, daily_limit: lim, available, order_start, order_end },
+    old: { name, category, description, price: priceRaw, max_per_student: maxRaw, daily_limit: limRaw, available, order_start, order_end }
   };
 }
 
@@ -117,7 +142,8 @@ router.get('/dashboard/menu/:id/edit', async (req, res, next) => {
       title: 'Edit menu item', action: '/dashboard/menu/' + item.id,
       old: { name: item.name, category: item.category, description: item.description, price: item.price,
              max_per_student: item.max_per_student ?? '', daily_limit: item.daily_limit ?? '',
-             available: !!item.available },
+             available: !!item.available,order_start: item.order_start ? item.order_start.slice(0, 5) : '',
+             order_end: item.order_end ? item.order_end.slice(0, 5) : '' },
       image: item.image }));
   } catch (err) { next(err); }
 });

@@ -1,21 +1,38 @@
 <%- include('../partials/head') %>
-<div class="wrap">
-  <p><a href="/stalls">&larr; All stalls</a></p>
-  <div class="stall-head">
-    <%- include('../partials/pic', { file: stall.logo, fallback: stall.name.charAt(0).toUpperCase(), cls: 'logo logo--lg' }) %>
-    <div>
+<div class="wrap stall-page-wrapper">
+  <p style="margin-bottom: 2rem;">
+  <a href="/stalls" class="btn btn--ghost btn--sm" style="border-radius: 999px; padding: 0.5rem 1.2rem;">
+    &larr; All stalls
+  </a>
+</p>
+  
+  <!-- ALIGNED HEADER -->
+  <div class="stall-header">
+    <%- include('../partials/pic', { file: stall.logo, fallback: stall.name.charAt(0).toUpperCase(), cls: 'stall-logo-main' }) %>
+    <div class="stall-header-info">
       <h1><%= stall.name %></h1>
       <% if (stall.location) { %><p class="meta"><%= stall.location %></p><% } %>
-      <% if (stall.description) { %><p><%= stall.description %></p><% } %>
+      <% if (stall.description) { %><p class="stall-desc-main"><%= stall.description %></p><% } %>
     </div>
   </div>
+  
   <%- include('../partials/errors', { errors }) %>
 
   <% if (!hasItems) { %>
     <p class="empty">This stall has not added any menu items yet.</p>
   <% } else { %>
+  
+  <!-- GLOBAL CANTEEN CLOSED BANNER -->
+  <% if (!isCanteenOpen) { %>
+    <div class="alert" style="background: #fbe9e7; padding: 1.5rem; margin: 2rem 0; border-radius: 0.5rem; text-align: center; border: 1px solid #f5c2c7;">
+      <strong style="color: #b3261e; font-size: 1.2rem;">The canteen is currently closed.</strong>
+      <p style="margin: 0.5rem 0 0; color: #b3261e;">Pre-orders are only accepted from 6:00 AM to 5:00 PM. Please come back tomorrow!</p>
+    </div>
+  <% } %>
+
   <div id="menu-app" class="menu-layout" data-layout="grid">
 
+    <!-- SIDEBAR (Now wrapped in a nice card) -->
     <aside class="side" aria-label="Menu options">
       <div class="side-group">
         <h2>Categories</h2>
@@ -45,12 +62,14 @@
       </div>
     </aside>
 
+    <!-- MAIN MENU -->
     <div class="menu-main">
       <h2 id="menu-title" class="menu-title">All</h2>
+      
       <% if (canOrder) { %>
       <form method="POST" action="/stalls/<%= stall.id %>/order" novalidate>
         <input type="hidden" name="_csrf" value="<%= csrf %>">
-      <% } else { %>
+      <% } else if (user) { %>
         <p class="notice">You are logged in as a stall owner, so ordering is turned off. This is how students see this menu.</p>
       <% } %>
 
@@ -60,28 +79,30 @@
             <h3 id="cat-<%= g.slug %>" class="cat-title"><%= g.category %></h3>
             <ul class="cards">
               <% g.items.forEach(function (m) { %>
-              <li class="card <%= m.state === 'off' ? 'card--off' : '' %>" data-cat="<%= m.category %>" data-name="<%= m.name %>" data-price="<%= m.price %>">
+              
+              <li class="card <%= (m.state === 'off' || !isCanteenOpen) ? 'card--off' : '' %>" data-cat="<%= m.category %>" data-name="<%= m.name %>" data-price="<%= m.price %>">
                 <%- include('../partials/pic', { file: m.image, fallback: '🍴', cls: 'card-img' }) %>
                 <div class="card-body">
                   <h4 class="card-name" id="n-<%= m.id %>"><%= m.name %></h4>
                   <p class="card-sub"><%= m.category %></p>
                   <p class="card-price">₱<%= m.price.toFixed(2) %></p>
+                  
                   <% if (m.description) { %><p class="card-desc"><%= m.description %></p><% } %>
+                  
                   <% if (m.state === 'off') { %>
                     <p class="reason" id="why-<%= m.id %>"><%= m.reason %></p>
                   <% } else if (m.max_per_student || m.remaining !== null) { %>
                     <p class="meta"><% if (m.max_per_student) { %>Max <%= m.max_per_student %> per order<% } %><% if (m.max_per_student && m.remaining !== null) { %> · <% } %><% if (m.remaining !== null) { %><%= m.remaining %> left for today<% } %></p>
                   <% } %>
+                  
                   <% if (canOrder) { %>
-                  <div class="stepper">
-                    <button type="button" class="step" data-for="qty-<%= m.id %>" data-step="-1" aria-label="One less <%= m.name %>" <%= m.state === 'off' ? 'disabled' : '' %>>−</button>
-                    <% if (m.state === 'off') { %>
-                      <input id="qty-<%= m.id %>" class="qty" type="number" value="0" disabled aria-labelledby="n-<%= m.id %>" aria-describedby="why-<%= m.id %>">
-                    <% } else { %>
-                      <input id="qty-<%= m.id %>" class="qty" name="qty_<%= m.id %>" type="number" min="0" max="<%= m.maxQty %>" inputmode="numeric" aria-labelledby="n-<%= m.id %>" value="<%= (old.qty && old.qty[m.id]) || 0 %>">
+                    <% if (isCanteenOpen && m.state !== 'off') { %>
+                      <div class="stepper">
+                        <button type="button" class="step" data-for="qty-<%= m.id %>" data-step="-1" aria-label="One less <%= m.name %>">−</button>
+                        <input id="qty-<%= m.id %>" class="qty" name="qty_<%= m.id %>" type="number" min="0" max="<%= m.maxQty %>" inputmode="numeric" aria-labelledby="n-<%= m.id %>" value="<%= (old.qty && old.qty[m.id]) || '' %>" placeholder="0">
+                        <button type="button" class="step" data-for="qty-<%= m.id %>" data-step="1" aria-label="One more <%= m.name %>">+</button>
+                      </div>
                     <% } %>
-                    <button type="button" class="step" data-for="qty-<%= m.id %>" data-step="1" aria-label="One more <%= m.name %>" <%= m.state === 'off' ? 'disabled' : '' %>>+</button>
-                  </div>
                   <% } %>
                 </div>
               </li>
@@ -92,17 +113,28 @@
         </div>
         <ul id="flat-list" class="cards" hidden></ul>
 
-      <% if (canOrder) { %>
+        <% if (canOrder) { %>
         <section id="checkout" class="checkout" aria-labelledby="checkout-title">
           <h3 id="checkout-title">Your order</h3>
-          <label for="pickup_time">Pickup time (today, 8:00–17:00)</label>
-          <input id="pickup_time" name="pickup_time" type="time" min="08:00" max="17:00" required value="<%= old.pickup_time || '' %>">
+          
+          <div id="checkout-items" class="checkout-items">
+            <p class="meta">No items selected yet.</p>
+          </div>
+
+          <div class="alert" style="background: #fff3cd; border-left: 5px solid #ffb81c; padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.5rem;">
+            <strong>⏰ Pickup Notice:</strong> The 1-hour pickup timer will start once the stall marks your order as <strong>Ready</strong>. Please monitor your order status.
+          </div>
+          
           <label for="note">Note for the stall (optional)</label>
           <textarea id="note" name="note" rows="2" maxlength="200"><%= old.note || '' %></textarea>
-          <button class="btn" type="submit">Place order</button>
+          
+          <div class="checkout-actions">
+            <button class="btn btn--lg" type="submit">Place order</button>
+            <div class="checkout-total" id="inline-total">Total: ₱0.00</div>
+          </div>
         </section>
-      </form>
-      <% } %>
+        </form>
+        <% } %>
     </div>
   </div>
 

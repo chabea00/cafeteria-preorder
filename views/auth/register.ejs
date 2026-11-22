@@ -2,21 +2,41 @@
 <h1>Create account</h1>
 <%- include('../partials/role-tabs', { tabs: [
   { label: 'Student', href: '/register', active: true },
-  { label: 'Stall owner', href: '/register/stall', active: false } ] }) %>
+  { label: 'Stall owner', href: '/register/stall', active: false },
+  { label: 'Staff', href: '/register/staff', active: false } ] }) %>
 <p class="notice">We collect your name, student number, and e-mail only to identify your orders and notify you of their status. Orders are kept for one academic year, then deleted. You can view or export your data any time from “Download my data”.</p>
 <%- include('../partials/errors', { errors }) %>
+
 <form method="POST" action="/register" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrf %>">
+  
   <label for="student_no">Student number</label>
   <input id="student_no" name="student_no" maxlength="20" required value="<%= old.studentNo || '' %>">
+  
   <label for="full_name">Full name</label>
   <input id="full_name" name="full_name" maxlength="120" autocomplete="name" required value="<%= old.fullName || '' %>">
+  
   <label for="email">E-mail</label>
   <input id="email" name="email" type="email" maxlength="160" autocomplete="email" required value="<%= old.email || '' %>">
-  <label for="password">Password</label>
+  
+  <label for="password">Create password</label>
   <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required aria-describedby="pw-help">
-  <small id="pw-help">At least 8 characters.</small>
-  <button class="btn" type="submit">Create account</button>
+  
+  <!-- NEW PASSWORD CHECKLIST -->
+  <div id="password-requirements" style="margin-top: 0.8rem;">
+    <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 0.4rem;">Ensure your password has:</p>
+    <ul class="pw-list">
+      <li id="req-length" class="invalid">At least 8 characters</li>
+      <li id="req-number" class="invalid">At least 1 number</li>
+      <li id="req-upper" class="invalid">At least 1 uppercase letter</li>
+      <li id="req-lower" class="invalid">At least 1 lowercase letter</li>
+    </ul>
+  </div>
+
+  <button class="btn" type="submit" style="margin-top: 1.5rem;">Create account</button>
 </form>
-<p>Already have an account? <a href="/login">Log in</a>.</p>
+
+<p style="margin-top: 1.5rem;">Already have an account? <a href="/login">Log in</a>.</p>
+
+<script src="/js/password-check.js"></script>
 <%- include('../partials/foot') %>

@@ -1,3 +1,7 @@
-<div class="role-tabs" role="group" aria-label="Account type">
-  <% tabs.forEach(function (t) { %><a href="<%= t.href %>"<%- t.active ? ' aria-current="page"' : '' %>><%= t.label %></a><% }); %>
+<div class="segmented-control">
+  <% tabs.forEach(function(tab) { %>
+    <a href="<%= tab.href %>" class="<%= tab.active ? 'active' : '' %>">
+      <%= tab.label %>
+    </a>
+  <% }); %>
 </div>
