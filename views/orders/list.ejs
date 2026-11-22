@@ -2,19 +2,59 @@
 <h1>My orders</h1>
 <p><a class="btn" href="/stalls">+ New pre-order</a></p>
 <% if (orders.length === 0) { %>
-  <p class="empty">You have no orders yet. Pick your lunch before the queue forms.</p>
+  <p class="empty">You have no orders yet. Pick your food before the queue forms.</p>
 <% } else { %>
 <table>
   <caption class="sr-only">Your pre-orders</caption>
-  <thead><tr><th scope="col">Reference</th><th scope="col">Stall</th><th scope="col">Pickup</th><th scope="col">Total</th><th scope="col">Status</th></tr></thead>
+  <thead>
+    <tr>
+      <th scope="col">Reference</th>
+      <th scope="col">Stall</th>
+      <th scope="col">Pickup</th>
+      <th scope="col">Total</th>
+      <th scope="col">Status</th>
+      <th scope="col" style="text-align: right;">Action</th>
+    </tr>
+  </thead>
   <tbody>
   <% orders.forEach(function (o) { %>
     <tr>
       <td><a href="/orders/<%= o.id %>"><%= o.reference_no %></a></td>
       <td><%= o.stall_name %></td>
-      <td><%= String(o.pickup_time).slice(0, 5) %></td>
+            <td style="white-space: nowrap;">
+        <%= new Date('1970-01-01T' + o.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+      </td>     
       <td>₱<%= Number(o.total).toFixed(2) %></td>
-      <td><span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span><% if (o.status === 'ready') { %> <strong>Ready for pickup</strong><% } %></td>
+      <td>
+        <span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span>
+      </td>
+      <td style="text-align: right;">
+        <% 
+          // Calculate the 5-minute grace period
+          const createdAt = new Date(o.created_at).getTime();
+          const now = new Date().getTime();
+          const minutesPassed = (now - createdAt) / 1000 / 60;
+          const canCancel = (o.status === 'pending' || o.status === 'preparing') && minutesPassed < 5;
+        %>
+
+        <!-- STATE 1: WITHIN 5 MINUTES (Clickable Cancel) -->
+        <% if (canCancel) { %>
+          <form method="POST" action="/orders/<%= o.id %>/cancel" class="inline" style="margin: 0;" onsubmit="return confirm('Are you sure you want to cancel order <%= o.reference_no %>?');">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn btn--small btn--danger" type="submit">Cancel</button>
+          </form>
+        
+        <!-- STATE 2: AFTER 5 MINUTES (Locked) -->
+        <% } else if (o.status === 'preparing' && minutesPassed >= 5) { %>
+          <span class="pill" style="background: var(--off-bg); color: var(--off-ink); border-color: var(--line); font-size: 0.85rem;">
+            Cancellation Locked
+          </span>
+        
+        <!-- STATE 3: PICKED UP, CANCELLED, OR READY (No Action) -->
+        <% } else { %>
+          <span class="meta">-</span>
+        <% } %>
+      </td>
     </tr>
   <% }); %>
   </tbody>

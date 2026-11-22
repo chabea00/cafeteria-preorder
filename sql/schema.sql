@@ -29,6 +29,7 @@ CREATE TABLE menu_items (
   stall_id        INT NOT NULL,
   name            VARCHAR(80)  NOT NULL,
   category        VARCHAR(40)  NOT NULL,
+  description     VARCHAR(200) NOT NULL DEFAULT '',                   -- short text shown on the menu card
   price           DECIMAL(8,2) NOT NULL CHECK (price >= 0),
   available       TINYINT(1)   NOT NULL DEFAULT 1,
   max_per_student INT NULL CHECK (max_per_student BETWEEN 1 AND 10),  -- most one student may order at once

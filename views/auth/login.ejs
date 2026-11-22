@@ -2,21 +2,46 @@
 <h1>Log in</h1>
 <%- include('../partials/role-tabs', { tabs: [
   { label: 'Student', href: '/login', active: as === 'student' },
-  { label: 'Stall owner', href: '/login?as=stall', active: as === 'stall' } ] }) %>
+  { label: 'Stall owner', href: '/login?as=stall', active: as === 'stall' },
+  { label: 'Staff', href: '/login?as=staff', active: as === 'staff' } ] }) %>
 <%- include('../partials/errors', { errors }) %>
+
 <form method="POST" action="/login" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <input type="hidden" name="as" value="<%= as %>">
+  
   <% if (as === 'stall') { %>
-  <label for="login">Stall e-mail</label>
-  <input id="login" name="login" type="email" maxlength="160" autocomplete="username" required value="<%= old.login || '' %>">
+    <label for="login">Stall e-mail</label>
+    <input id="login" name="login" type="email" maxlength="160" autocomplete="username" required value="<%= old.login || '' %>">
+  <% } else if (as === 'staff') { %>
+    <label for="login">Staff e-mail</label>
+    <input id="login" name="login" type="email" maxlength="160" autocomplete="username" required value="<%= old.login || '' %>">
   <% } else { %>
-  <label for="login">Student number</label>
-  <input id="login" name="login" maxlength="20" autocomplete="username" required value="<%= old.login || '' %>">
+    <label for="login">Student number</label>
+    <input id="login" name="login" maxlength="20" autocomplete="username" required value="<%= old.login || '' %>">
   <% } %>
-  <label for="password">Password</label>
-  <input id="password" name="password" type="password" autocomplete="current-password" required>
-  <button class="btn" type="submit">Log in</button>
+
+  <!-- Wrap the password section in a max-width div -->
+  <div style="max-width: 30rem;">
+    <!-- Flexbox container for the Label and Link -->
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.9rem; margin-bottom: 0.25rem;">
+      <label for="password" style="margin: 0;">Password</label>
+      <a href="/forgot-password" style="font-size: 0.85rem; color: var(--brand); font-weight: 600; text-decoration: none;">Forgot password?</a>
+    </div>
+    <!-- The Password Input -->
+    <input type="password" id="password" name="password" required style="margin-top: 0;">
+  </div>
+  
+  <button class="btn" type="submit" style="margin-top: 1.5rem;">Log in</button>
 </form>
-<p>No account yet? <a href="<%= as === 'stall' ? '/register/stall' : '/register' %>">Create one</a>.</p>
+
+<p>No account yet? 
+  <% if (as === 'stall') { %>
+    <a href="/register/stall">Create a stall account</a>.
+  <% } else if (as === 'staff') { %>
+    <a href="/register/staff">Create a staff account</a>.
+  <% } else { %>
+    <a href="/register">Create a student account</a>.
+  <% } %>
+</p>
 <%- include('../partials/foot') %>

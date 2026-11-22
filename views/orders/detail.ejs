@@ -1,7 +1,54 @@
 <%- include('../partials/head') %>
 <h1>Order <%= order.reference_no %></h1>
-<p>Stall: <strong><%= order.stall_name %></strong> · Pickup <%= String(order.pickup_time).slice(0, 5) %></p>
+<p>Stall: <strong><%= order.stall_name %></strong> · Pickup <strong><%= new Date('1970-01-01T' + order.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %></strong></p>
 <p>Status: <span class="pill pill--<%= order.status %>"><%= order.status.replace('_', ' ') %></span></p>
+
+<!-- STATUS BANNERS FOR THE STUDENT -->
+<% if (order.status === 'preparing') { %>
+  <div style="background: #fff3cd; border-left: 5px solid var(--accent); padding: 1.5rem; margin: 1.5rem 0; border-radius: 0.5rem;">
+    <h2 style="margin: 0; color: var(--ink); font-size: 1.5rem;">We're preparing your food!</h2>
+    <p style="margin: 0.5rem 0 0; color: var(--muted);">Your order is being prepared by <strong><%= order.stall_name %></strong>. We'll mark it as ready shortly.</p>
+  </div>
+<% } else if (order.status === 'ready') { %>
+  <div style="background: #e3f2fd; border-left: 5px solid var(--brand); padding: 1.5rem; margin: 1.5rem 0; border-radius: 0.5rem;">
+    <h2 style="margin: 0; color: var(--brand); font-size: 1.5rem;">Your food is ready!</h2>
+    <p style="margin: 0.5rem 0 0; color: var(--ink);">Please proceed to <strong><%= order.stall_name %></strong> to pick up your order.</p>
+  </div>
+<% } %>
+
+<!-- PICKUP COUNTDOWN (Only shows when the food is Ready) -->
+<% if (order.status === 'ready' && order.pickup_deadline) { %>
+  <div style="background: var(--surface); border: 1px solid var(--line); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+    <strong>Pickup Notice:</strong> You must pick it up within <strong>1 hour</strong>. 
+    <br>Time remaining: <strong id="countdown" style="color: var(--bad);">Loading...</strong>
+  </div>
+
+  <script>
+    const deadline = new Date("<%= order.pickup_deadline %>").getTime();
+    setInterval(function() {
+      const now = new Date().getTime();
+      const distance = deadline - now;
+      
+      if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "EXPIRED";
+        return;
+      }
+      
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      document.getElementById("countdown").innerHTML = minutes + "m " + seconds + "s left";
+    }, 1000);
+  </script>
+<% } %>
+
+<!-- Display cancellation reason if it exists -->
+<% if (order.status === 'cancelled' && order.cancellation_reason) { %>
+  <div style="background: #fbe9e7; border-left: 5px solid var(--bad); padding: 1.5rem; margin: 1.5rem 0; border-radius: 0.5rem;">
+    <h2 style="margin: 0; color: var(--bad); font-size: 1.2rem;">Order Cancelled by Stall</h2>
+    <p style="margin: 0.5rem 0 0; color: var(--ink);"><strong>Reason:</strong> <%= order.cancellation_reason %></p>
+  </div>
+<% } %>
+
 <table>
   <caption class="sr-only">Items in this order</caption>
   <thead><tr><th scope="col">Item</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>
@@ -13,11 +60,35 @@
   <tfoot><tr><th scope="row" colspan="2">Total (pay at pickup)</th><td>₱<%= Number(order.total).toFixed(2) %></td></tr></tfoot>
 </table>
 <% if (order.note) { %><p>Note: <%= order.note %></p><% } %>
-<% if (order.status === 'pending') { %>
-<form method="POST" action="/orders/<%= order.id %>/cancel">
-  <input type="hidden" name="_csrf" value="<%= csrf %>">
-  <button class="btn btn--danger" type="submit">Cancel this order</button>
-</form>
-<% } %>
-<p><a href="/orders">Back to my orders</a></p>
+
+<!-- CANCEL BUTTON WITH PERMANENT HELPER TEXT -->
+<% 
+  const createdAt = new Date(order.created_at).getTime();
+  const now = new Date().getTime();
+  const minutesPassed = (now - createdAt) / 1000 / 60;
+  const canCancel = (order.status === 'pending' || order.status === 'preparing') && minutesPassed < 5;
+%>
+
+<div style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 2rem;">
+  <form method="POST" action="/orders/<%= order.id %>/cancel" onsubmit="return confirm('Are you sure you want to cancel this order?');" style="background: transparent; border: none; padding: 0; margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    
+    <% if (canCancel) { %>
+      <button class="btn btn--danger" type="submit">Cancel this order</button>
+    <% } else { %>
+      <button class="btn" type="button" disabled style="background: var(--off-bg); color: var(--off-ink); border-color: var(--line); cursor: not-allowed; opacity: 1;">
+        Cancellation Locked
+      </button>
+    <% } %>
+  </form>
+  
+  <!-- This helper text is now OUTSIDE the if-statement, so it always shows -->
+  <p class="meta" style="margin-top: 0.5rem; font-size: 0.85rem;">You can only cancel within 5 minutes of placing an order.</p>
+</div>
+
+<div style="margin-top: 2rem; margin-bottom: 1.5rem;">
+  <a href="/orders" class="btn btn--sm" style="border-radius: 999px; padding: 0.5rem 1.2rem; font-weight: 700; box-shadow: 0 2px 8px rgba(29, 95, 184, 0.2);">
+    &larr; Back to my orders
+  </a>
+</div>
 <%- include('../partials/foot') %>
