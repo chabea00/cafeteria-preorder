@@ -7,7 +7,8 @@ const db = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 5, // CHANGED: Reduced for free tiers
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined // ADDED: TLS for cloud
 });
 
 module.exports = { db };
