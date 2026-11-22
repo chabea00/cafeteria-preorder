@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session); // ADDED: DB session store
 const crypto = require('crypto');
 const multer = require('multer');
 require('./lib/images'); // makes sure public/uploads exists
@@ -8,10 +9,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ADDED: Trust the proxy (Render/Railway) so secure cookies work
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.disable('x-powered-by');
 app.use((req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); next(); });
 
-// Photos are held in memory first and only written to disk by a route after login and validation.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 30, fieldSize: 20 * 1024 }
@@ -21,11 +26,29 @@ app.set('views', './views');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
+// ADDED: Database session store so users stay logged in on redeploy
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  createDatabaseTable: true,
+  connectionLimit: 5,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-only-change-me',
+  store: sessionStore, // ADDED: Use DB instead of memory
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 2 * 60 * 60 * 1000 }
+  cookie: { 
+    httpOnly: true, 
+    sameSite: 'lax', 
+    secure: process.env.NODE_ENV === 'production', // ADDED: HTTPS only in production
+    maxAge: 2 * 60 * 60 * 1000 
+  }
 }));
 
 // request logger
@@ -78,7 +101,7 @@ app.use(require('./routes/dashboard'));
 // these two must be LAST, in this order
 app.use((req, res) => res.status(404).render('error', { title: 'Not found', message: 'That page does not exist.' }));
 app.use((err, req, res, next) => {
-  console.error(err); // details stay in the log; the user sees nothing technical
+  console.error(err);
   res.status(500).render('error', { title: 'Something went wrong', message: 'Please try again in a moment.' });
 });
 
