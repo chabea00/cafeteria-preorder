@@ -15,7 +15,6 @@ async function findByLogin(identifier) {
   return rows[0];
 }
 
-// NEW FUNCTION FOR STAFF
 async function createStaff({ fullName, email, passwordHash }) {
   const [r] = await db.query(
     "INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, 'staff')",
@@ -23,7 +22,7 @@ async function createStaff({ fullName, email, passwordHash }) {
   return r.insertId;
 }
 
-// NEW FUNCTIONS FOR PASSWORD RESET
+// Password reset
 async function createResetToken(email, token, expiresAt) {
   await db.query('DELETE FROM password_resets WHERE email = ?', [email]);
   await db.query('INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)', [email, token, expiresAt]);
@@ -35,15 +34,16 @@ async function findResetToken(token) {
 }
 
 async function updatePassword(email, passwordHash) {
-  await db.query('UPDATE users SET password_hash = ? WHERE email = ?', [email, passwordHash]);
-  await db.query('DELETE FROM password_resets WHERE email = ?', [email]); 
+  // FIXED: the arguments were swapped ([email, passwordHash])
+  await db.query('UPDATE users SET password_hash = ? WHERE email = ?', [passwordHash, email]);
+  await db.query('DELETE FROM password_resets WHERE email = ?', [email]);
 }
 
-module.exports = { 
-  create, 
-  findByLogin, 
-  createStaff,      
-  createResetToken, 
-  findResetToken, 
-  updatePassword 
+module.exports = {
+  create,
+  findByLogin,
+  createStaff,
+  createResetToken,
+  findResetToken,
+  updatePassword
 };

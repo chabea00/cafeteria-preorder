@@ -174,7 +174,8 @@ router.post('/forgot-password', async (req, res, next) => {
     
     await Users.createResetToken(email, token, expiresAt);
 
-    req.session.flash = `Simulated Email: <a href="/reset-password/${token}" style="text-decoration:underline;font-weight:bold;">Click here to reset your password</a>`;
+    req.session.flash = 'Your password reset link is ready. Use the link below to reset your password.';
+    req.session.resetLink = '/reset-password/' + token;
     res.redirect(303, '/login');
   } catch (err) { next(err); }
 });

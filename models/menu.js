@@ -3,7 +3,27 @@ const { db } = require('../db');
 const CATEGORIES = ['Viands', 'Rice meals', 'Snacks', 'Drinks', 'Desserts', 'Others'];
 const DEFAULT_MAX_PER_ORDER = 10;
 
-// Works out what a student should see for one item.
+// Current time in Manila as minutes since midnight, independent of the server's time zone
+// (Render/Railway run in UTC).
+const MANILA_CLOCK = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+});
+function manilaMinutes() {
+  const parts = MANILA_CLOCK.formatToParts(new Date());
+  const h = Number(parts.find((p) => p.type === 'hour').value);
+  const m = Number(parts.find((p) => p.type === 'minute').value);
+  return h * 60 + m;
+}
+
+// Convert "HH:MM[:SS]" to "h:MM AM/PM"
+function formatTime(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  let displayH = h > 12 ? h - 12 : h;
+  if (displayH === 0) displayH = 12; // midnight
+  return displayH + ':' + String(m).padStart(2, '0') + ' ' + suffix;
+}
+
 // Works out what a student should see for one item.
 function decorate(r) {
   const sold = Number(r.sold_today);
@@ -11,9 +31,8 @@ function decorate(r) {
   const perOrder = r.max_per_student || DEFAULT_MAX_PER_ORDER;
   let state = 'ok';
   let reason = '';
-  
-  const now = new Date();
-  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const currentTimeInMinutes = manilaMinutes();
   let isAvailableNow = true;
 
   if (r.order_start && r.order_end) {
@@ -22,26 +41,17 @@ function decorate(r) {
     const startTotal = startH * 60 + startM;
     const endTotal = endH * 60 + endM;
 
-    if (currentTimeInMinutes < startTotal || currentTimeInMinutes > endTotal) {
+    // >= so the end minute is closed, matching the order check in routes/stalls.js
+    if (currentTimeInMinutes < startTotal || currentTimeInMinutes >= endTotal) {
       isAvailableNow = false;
       state = 'off';
-      
-      // FORMATTER: Convert 24-hour to 12-hour with AM/PM
-      const formatTime = (timeStr) => {
-        const [h, m] = timeStr.split(':').map(Number);
-        const suffix = h >= 12 ? 'PM' : 'AM';
-        let displayH = h > 12 ? h - 12 : h;
-        if (displayH === 0) displayH = 12; // Handle midnight (00:00)
-        return displayH + ':' + String(m).padStart(2, '0') + ' ' + suffix;
-      };
-
       reason = `Ordering closed. Available from ${formatTime(r.order_start)} to ${formatTime(r.order_end)}.`;
     }
   }
 
   if (!r.available) { state = 'off'; reason = 'Item will be coming back soon'; }
   else if (remaining === 0) { state = 'off'; reason = 'Item has reached the limit of pre-orders'; }
-  
+
   return {
     ...r, price: Number(r.price), sold_today: sold, remaining, state, reason, isAvailableNow,
     maxQty: remaining == null ? perOrder : Math.min(perOrder, remaining)
@@ -51,7 +61,6 @@ function decorate(r) {
 // Every non-deleted item of one stall, with how many were pre-ordered today.
 async function listForStall(stallId) {
   const [rows] = await db.query(
-    // ADDED order_start and order_end HERE
     'SELECT m.id, m.name, m.category, m.price, m.available, m.max_per_student, m.daily_limit, m.image, m.description, m.order_start, m.order_end, ' +
     "COALESCE(SUM(CASE WHEN o.id IS NOT NULL THEN oi.quantity END), 0) AS sold_today " +
     'FROM menu_items m ' +
@@ -85,7 +94,6 @@ async function listPublic() {
 // Ownership is checked inside the SQL: a stall can never touch another stall's item.
 async function findOwned(id, stallId) {
   const [rows] = await db.query(
-    // ADDED order_start and order_end HERE
     'SELECT id, name, category, price, available, max_per_student, daily_limit, image, description, order_start, order_end ' +
     'FROM menu_items WHERE id = ? AND stall_id = ? AND deleted = 0', [id, stallId]);
   return rows[0];
@@ -93,7 +101,6 @@ async function findOwned(id, stallId) {
 
 async function create(stallId, d) {
   const [r] = await db.query(
-    // ADDED order_start and order_end HERE
     'INSERT INTO menu_items (stall_id, name, category, description, price, available, max_per_student, daily_limit, image, order_start, order_end) ' +
     'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [stallId, d.name, d.category, d.description, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit, d.image || null, d.order_start || null, d.order_end || null]);
@@ -102,7 +109,6 @@ async function create(stallId, d) {
 
 // d.image: undefined = keep the current photo, null = remove it, string = new file name
 async function update(id, stallId, d) {
-  // ADDED order_start and order_end HERE
   const sets = ['name = ?', 'category = ?', 'description = ?', 'price = ?', 'available = ?', 'max_per_student = ?', 'daily_limit = ?', 'order_start = ?', 'order_end = ?'];
   const params = [d.name, d.category, d.description, d.price, d.available ? 1 : 0, d.max_per_student, d.daily_limit, d.order_start || null, d.order_end || null];
   if (d.image !== undefined) { sets.push('image = ?'); params.push(d.image); }

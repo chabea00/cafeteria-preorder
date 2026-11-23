@@ -1,8 +1,8 @@
 <%- include('../partials/head') %>
 <h1><%= stall.name %>: My Menu</h1>
-<p><a class="btn" href="/dashboard/menu/new">+ Add item</a> <a class="btn btn--ghost" href="/stalls/<%= stall.id %>">See what students see</a></p>
+<p><a class="btn" href="/dashboard/menu/new">+ Add item</a> <a class="btn btn--ghost" href="/stalls/<%= stall.id %>">See what customers see</a></p>
 <% if (groups.length === 0) { %>
-  <p class="empty">Your menu is empty. Add your first item so students can pre-order.</p>
+  <p class="empty">Your menu is empty. Add your first item so customers can pre-order.</p>
 <% } %>
 <% groups.forEach(function (g) { %>
 <section aria-labelledby="cat-<%= g.slug %>">

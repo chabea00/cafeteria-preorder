@@ -1,6 +1,12 @@
 // Progressive enhancement for the stall menu: filter, sort, layout, quantity buttons, cart bar.
 (function () {
   'use strict';
+  // Escape text before putting it into innerHTML (item names are typed by stall owners).
+  function esc(t) {
+    return String(t).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
   var app = document.getElementById('menu-app');
   if (!app) return;
   app.classList.add('js');
@@ -82,7 +88,7 @@
         checkoutHTML += `
           <div class="checkout-item">
             <div>
-              <span class="checkout-item-name">${c.dataset.name}</span>
+              <span class="checkout-item-name">${esc(c.dataset.name)}</span>
               <span class="checkout-item-qty">x ${q}</span>
             </div>
             <span class="checkout-item-price">₱${subtotal.toFixed(2)}</span>

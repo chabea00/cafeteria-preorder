@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= title %> · Dash Line</title>
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/password-toggle.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site"><%- include('nav') %></header>
 <main id="main" class="<%= (typeof wide !== 'undefined' && wide) ? '' : 'container' %>">
 <% if (flash) { %><p class="flash container" role="status"><%= flash %></p><% } %>
+<% if (resetLink) { %><p class="flash container" role="status"><a href="<%= resetLink %>"><strong>Click here to reset your password</strong></a></p><% } %>

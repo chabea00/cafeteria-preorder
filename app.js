@@ -91,6 +91,8 @@ app.use((req, res, next) => {
   res.locals.path = req.path;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;
+  res.locals.resetLink = req.session.resetLink || null; // simulated password-reset e-mail link
+  delete req.session.resetLink;
   next();
 });
 
