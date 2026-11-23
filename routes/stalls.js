@@ -5,6 +5,15 @@ const Orders = require('../models/orders');
 const { requireRole } = require('../middleware/auth');
 const router = Router();
 
+// Formatters pinned to Manila time so results do not depend on the server's time zone
+// (Render/Railway run in UTC).
+const PICKUP_STORED = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+}); // e.g. "14:30" -> saved in the database
+const PICKUP_DISPLAY = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit', hour12: true
+}); // e.g. "2:30 PM" -> shown to the user
+
 async function showStall(req, res, stall, extra = {}, status = 200) {
   const items = await Menu.listForStall(stall.id);
   const user = req.session.user;
@@ -14,26 +23,26 @@ async function showStall(req, res, stall, extra = {}, status = 200) {
   // Force the timezone to Asia/Manila
   const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
   const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
-  
+
   const OPEN_TIME = 6 * 60;  // 6:00 AM
   const CLOSE_TIME = 17 * 60; // 5:00 PM
-  
+
   // Using >= so 5:00 PM exactly is closed
   const isCanteenOpen = !(currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME);
 
   res.status(status).render('stalls/show', {
-    title: stall.name, 
-    wide: true, 
-    scripts: ['/js/stall-menu.js'], 
-    stall, 
-    hasItems: items.length > 0, 
+    title: stall.name,
+    wide: true,
+    scripts: ['/js/stall-menu.js'],
+    stall,
+    hasItems: items.length > 0,
     groups: Menu.groupByCategory(items),
-    // CHANGED: Allow staff to order
+    // Allow staff to order
     canOrder: !user || user.role === 'student' || user.role === 'staff',
-    isCanteenOpen, 
-    errors: [], 
-    old: { qty: {} }, 
-    ...extra 
+    isCanteenOpen,
+    errors: [],
+    old: { qty: {} },
+    ...extra
   });
 }
 
@@ -58,12 +67,12 @@ router.get('/stalls/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// CHANGED: Allow staff to submit orders
+// Allow staff to submit orders
 router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, res, next) => {
   try {
     const stall = await loadStall(req, res);
     if (!stall) return;
-    
+
     const note = String(req.body.note ?? '').trim();
     const rawQty = {};
     for (const [k, v] of Object.entries(req.body)) {
@@ -84,15 +93,16 @@ router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, re
     }
     if (!wanted.length && !errors.length) errors.push('Choose at least one item.');
 
-    // 2. PICKUP LOGIC
+    // 2. PICKUP LOGIC (Manila time, independent of server time zone)
     const now = new Date();
-    const pickupDeadline = new Date(now.getTime() + (60 * 60000)); 
-    const pickupTime = pickupDeadline.toTimeString().slice(0, 5); 
+    const pickupDeadline = new Date(now.getTime() + (60 * 60000));
+    const pickupTime = PICKUP_STORED.format(pickupDeadline);       // "14:30", saved to the database
+    const pickupDisplay = PICKUP_DISPLAY.format(pickupDeadline);   // "2:30 PM", shown to the user
 
-    // NEW: GLOBAL OPERATING HOURS CHECK
+    // GLOBAL OPERATING HOURS CHECK
     const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
     const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
-    
+
     const OPEN_TIME = 6 * 60;  // 6:00 AM
     const CLOSE_TIME = 17 * 60; // 5:00 PM
 
@@ -127,13 +137,13 @@ router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, re
     if (!errors.length) {
       try {
         const { reference } = await Orders.create({
-          userId: req.session.user.id, 
-          stallId: stall.id, 
-          pickupTime, 
-          note, 
-          wanted 
+          userId: req.session.user.id,
+          stallId: stall.id,
+          pickupTime,
+          note,
+          wanted
         });
-        req.session.flash = 'Order ' + reference + ' placed at ' + stall.name + '. Please pick up by ' + pickupTime + '.';
+        req.session.flash = 'Order ' + reference + ' placed at ' + stall.name + '. Please pick up by ' + pickupDisplay + '.';
         return res.redirect(303, '/orders'); // Post/Redirect/Get
       } catch (err) {
         if (!(err instanceof Orders.UserError)) throw err;

@@ -1,18 +1,23 @@
+require('dotenv').config(); // must be first
 const express = require('express');
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session); // ADDED: DB session store
+const MySQLStore = require('express-mysql-session')(session);
 const crypto = require('crypto');
 const multer = require('multer');
-require('./lib/images'); // makes sure public/uploads exists
-require('dotenv').config();
+const { db, sslOptions, port: dbPort } = require('./db'); // adjust path if needed
+
+const isProd = process.env.NODE_ENV === 'production';
+
+// Fail fast instead of silently using a weak fallback secret
+if (isProd && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is required in production');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ADDED: Trust the proxy (Render/Railway) so secure cookies work
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
-}
+// Trust the proxy (Render/Railway) so secure cookies work
+if (isProd) app.set('trust proxy', 1);
 
 app.disable('x-powered-by');
 app.use((req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); next(); });
@@ -27,27 +32,47 @@ app.set('views', './views');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// ADDED: Database session store so users stay logged in on redeploy
+// ---- Routes that must NOT create sessions (placed BEFORE session middleware) ----
+app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+
+// Uploaded photos are stored in the database so they survive redeploys
+app.get('/uploads/:filename', async (req, res, next) => {
+  if (!/^[a-f0-9]{32}\.(jpg|png|webp)$/.test(req.params.filename)) return next();
+  try {
+    const [rows] = await db.execute(
+      'SELECT mime, data FROM images WHERE filename = ?', [req.params.filename]);
+    if (!rows.length) return next();
+    res.set({
+      'Content-Type': rows[0].mime,
+      'Cache-Control': 'public, max-age=31536000, immutable', // filenames are random, never reused
+      'X-Content-Type-Options': 'nosniff'
+    });
+    res.send(rows[0].data);
+  } catch (e) { next(e); }
+});
+
+// ---- Sessions ----
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
+  port: dbPort,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  createDatabaseTable: true,
-  connectionLimit: 5,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined
+  createDatabaseTable: true, // needs CREATE privilege; otherwise create the table once as admin
+  connectionLimit: 2,        // keeps total connections low (app pool uses up to 5)
+  ssl: sslOptions
 });
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev-only-change-me',
-  store: sessionStore, // ADDED: Use DB instead of memory
+  secret: process.env.SESSION_SECRET || 'dev-only-change-me', // dev only; production throws above
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    httpOnly: true, 
-    sameSite: 'lax', 
-    secure: process.env.NODE_ENV === 'production', // ADDED: HTTPS only in production
-    maxAge: 2 * 60 * 60 * 1000 
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProd,
+    maxAge: 2 * 60 * 60 * 1000
   }
 }));
 
@@ -91,8 +116,6 @@ app.use((req, res, next) => {
 });
 
 app.use(require('./routes/home'));
-app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
-
 app.use(require('./routes/auth'));
 app.use(require('./routes/stalls'));
 app.use(require('./routes/orders'));
@@ -106,6 +129,6 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => console.log('Listening on http://localhost:' + PORT));
+  app.listen(PORT, () => console.log('Listening on port ' + PORT));
 }
 module.exports = app;

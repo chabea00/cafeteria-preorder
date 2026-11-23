@@ -1,9 +1,15 @@
 <%- include('../partials/head') %>
 <div class="wrap stall-page-wrapper">
   <p style="margin-bottom: 2rem;">
-  <a href="/stalls" class="btn btn--ghost btn--sm" style="border-radius: 999px; padding: 0.5rem 1.2rem;">
-    &larr; All stalls
-  </a>
+  <% if (user && user.role === 'stall') { %>
+    <a href="/dashboard/menu" class="btn btn--ghost btn--sm" style="border-radius: 999px; padding: 0.5rem 1.2rem;">
+      &larr; Back to my dashboard
+    </a>
+  <% } else { %>
+    <a href="/stalls" class="btn btn--ghost btn--sm" style="border-radius: 999px; padding: 0.5rem 1.2rem;">
+      &larr; All stalls
+    </a>
+  <% } %>
 </p>
   
   <!-- ALIGNED HEADER -->
@@ -70,7 +76,7 @@
       <form method="POST" action="/stalls/<%= stall.id %>/order" novalidate>
         <input type="hidden" name="_csrf" value="<%= csrf %>">
       <% } else if (user) { %>
-        <p class="notice">You are logged in as a stall owner, so ordering is turned off. This is how students see this menu.</p>
+        <p class="notice">You are logged in as a stall owner, so ordering is turned off. This is how customers see this menu.</p>
       <% } %>
 
         <div id="grouped">

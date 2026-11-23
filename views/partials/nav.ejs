@@ -1,6 +1,6 @@
 <% const cur = (p, exact) => (((exact || p === '/') ? path === p : path.startsWith(p)) ? ' aria-current="page"' : ''); %>
 <nav aria-label="Main">
-  <a class="brand" href="/">Dash<em>Line</em></a>
+  <a class="brand" href="<%= (user && user.role === 'stall') ? '/dashboard' : '/' %>">Dash<em>Line</em></a>
   <ul>
   <% if (user && user.role === 'stall') { %>
     <!-- Stall Owner Links -->
