@@ -22,8 +22,8 @@
       <td><a href="/orders/<%= o.id %>"><%= o.reference_no %></a></td>
       <td><%= o.stall_name %></td>
             <td style="white-space: nowrap;">
-        <%= new Date('1970-01-01T' + o.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
-      </td>     
+              <%= new Date('1970-01-01T' + o.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+            </td>  
       <td>₱<%= Number(o.total).toFixed(2) %></td>
       <td>
         <span class="pill pill--<%= o.status %>"><%= o.status.replace('_', ' ') %></span>

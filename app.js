@@ -53,15 +53,11 @@ app.get('/uploads/:filename', async (req, res, next) => {
 
 // ---- Sessions ----
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  port: dbPort,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  createDatabaseTable: true, // needs CREATE privilege; otherwise create the table once as admin
-  connectionLimit: 2,        // keeps total connections low (app pool uses up to 5)
-  ssl: sslOptions
-});
+  createDatabaseTable: true,
+  expiration: 86400000,
+  clearExpired: true,
+  checkExpirationInterval: 900000
+}, db); // <-- Pass your existing db pool as the second argument
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-only-change-me', // dev only; production throws above

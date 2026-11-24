@@ -28,13 +28,13 @@
   <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="img-help">
   <small id="img-help">JPG, PNG or WebP, up to 2 MB. If the form shows an error, choose the photo again.</small>
 
-  <label for="max_per_student">Most a student can order at once (optional)</label>
+  <label for="max_per_student">Most a customer can order at once (optional)</label>
   <input id="max_per_student" name="max_per_student" type="number" min="1" max="10" aria-describedby="max-help" value="<%= old.max_per_student === undefined ? '' : old.max_per_student %>">
   <small id="max-help">Leave blank for the default of 10.</small>
 
   <label for="daily_limit">Daily pre-order limit (optional)</label>
   <input id="daily_limit" name="daily_limit" type="number" min="1" max="1000" aria-describedby="lim-help" value="<%= old.daily_limit === undefined ? '' : old.daily_limit %>">
-  <small id="lim-help">Total pre-orders accepted per day. Once reached, the item is greyed out for students until tomorrow. Leave blank for no limit.</small>
+  <small id="lim-help">Total pre-orders accepted per day. Once reached, the item is greyed out for customers until tomorrow. Leave blank for no limit.</small>
   
   <!-- PICKUP TIME WINDOW -->
   <div style="background: var(--tint); padding: 1rem; border-radius: 0.5rem; margin: 1.5rem 0; border: 1px solid var(--line);">

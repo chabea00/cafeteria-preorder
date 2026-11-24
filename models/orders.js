@@ -101,7 +101,7 @@ async function queue(stallId, status = null) {
     'WHERE o.stall_id = ?';
   const params = [stallId];
   if (status) { sql += ' AND o.status = ?'; params.push(status); }
-  sql += ' GROUP BY o.id ORDER BY o.created_at DESC LIMIT 100';
+  sql += ' GROUP BY o.id, u.full_name ORDER BY o.created_at DESC LIMIT 100';
   const [rows] = await db.query(sql, params);
   return rows;
 }

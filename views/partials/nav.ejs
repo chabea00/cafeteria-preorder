@@ -1,8 +1,11 @@
-<% const cur = (p, exact) => (((exact || p === '/') ? path === p : path.startsWith(p)) ? ' aria-current="page"' : ''); %>
+<% const cur = (p, exact) => {
+     if (typeof path === 'undefined') return '';
+     return (((exact || p === '/') ? path === p : path.startsWith(p)) ? ' aria-current="page"' : '');
+   }; %>
 <nav aria-label="Main">
-  <a class="brand" href="<%= (user && user.role === 'stall') ? '/dashboard' : '/' %>">Dash<em>Line</em></a>
+  <a class="brand" href="<%= (typeof user !== 'undefined' && user && user.role === 'stall') ? '/dashboard' : '/' %>">Dash<em>Line</em></a>
   <ul>
-  <% if (user && user.role === 'stall') { %>
+  <% if (typeof user !== 'undefined' && user && user.role === 'stall') { %>
     <!-- Stall Owner Links -->
     <li><a href="/dashboard"<%- cur('/dashboard', true) %>>Orders</a></li>
     <li><a href="/dashboard/menu"<%- cur('/dashboard/menu') %>>My menu</a></li>
@@ -11,14 +14,14 @@
     <!-- Guest, Student, and Staff Links (Identical) -->
     <li><a href="/"<%- cur('/', true) %>>Home</a></li>
     <li><a href="/stalls"<%- cur('/stalls') %>>Stalls</a></li>
-    <% if (user) { %>
+    <% if (typeof user !== 'undefined' && user) { %>
       <li><a href="/orders"<%- cur('/orders') %>>My orders</a></li>
     <% } %>
   <% } %>
   </ul>
   
   <div class="nav-actions">
-  <% if (user) { %>
+  <% if (typeof user !== 'undefined' && user) { %>
     <% if (user.role === 'student' || user.role === 'staff') { %>
       <a class="btn btn--sm" href="/stalls">Order now</a>
     <% } %>

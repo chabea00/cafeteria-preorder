@@ -24,11 +24,19 @@ async function showStall(req, res, stall, extra = {}, status = 200) {
   const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
   const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
 
+  // OPEN_TIME = 23 * 60; // 11 PM
+  // CLOSE_TIME = 12 * 60; // 12 PM
+
   const OPEN_TIME = 6 * 60;  // 6:00 AM
   const CLOSE_TIME = 17 * 60; // 5:00 PM
 
   // Using >= so 5:00 PM exactly is closed
-  const isCanteenOpen = !(currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME);
+  // const isCanteenOpen = !(currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME);
+
+  const isCanteenOpen =
+  OPEN_TIME < CLOSE_TIME
+    ? currentTimeInMinutes >= OPEN_TIME && currentTimeInMinutes < CLOSE_TIME
+    : currentTimeInMinutes >= OPEN_TIME || currentTimeInMinutes < CLOSE_TIME;
 
   res.status(status).render('stalls/show', {
     title: stall.name,
@@ -103,6 +111,9 @@ router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, re
     const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
     const currentTimeInMinutes = phTime.getHours() * 60 + phTime.getMinutes();
 
+    // OPEN_TIME = 23 * 60; // 11 PM
+    // CLOSE_TIME = 12 * 60; // 12 PM
+
     const OPEN_TIME = 6 * 60;  // 6:00 AM
     const CLOSE_TIME = 17 * 60; // 5:00 PM
 
@@ -110,6 +121,15 @@ router.post('/stalls/:id/order', requireRole('student', 'staff'), async (req, re
     if (currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME) {
       errors.push('The canteen is currently closed. Pre-orders are only accepted from 6:00 AM to 5:00 PM.');
     }
+
+    // if (isOutsideHours) {
+    //   errors.push('The canteen is currently closed.');
+    // }
+
+    if (currentTimeInMinutes < OPEN_TIME || currentTimeInMinutes >= CLOSE_TIME) {
+      errors.push('The canteen is currently closed. Pre-orders are only accepted from 6:00 AM to 5:00 PM.');
+    }
+
 
     // 3. Security Check: Ensure the items are within their specific time window
     if (!errors.length) {
